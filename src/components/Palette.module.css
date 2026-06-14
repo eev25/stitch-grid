@@ -1,0 +1,273 @@
+/* ============================================================
+   Palette.module.css
+   Ported from design-reference/styles.css — palette sidebar,
+   color editor popover, and mobile palette strip/sheet.
+   Token values + breakpoints unchanged.
+   ============================================================ */
+
+/* ---------- Desktop sidebar ---------- */
+.palette {
+  flex: 0 0 196px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  z-index: 10;
+}
+.paletteHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+}
+.paletteTitle {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.paletteList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 2px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.paletteFoot { padding: 8px 10px 12px; }
+
+@media (max-width: 860px) {
+  .palette { display: none; }
+}
+
+/* ---------- Swatch row (shared by sidebar + sheet) ---------- */
+.swatchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px 7px 7px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  position: relative;
+  transition: background .12s, border-color .12s;
+  cursor: pointer;
+}
+.swatchRow:hover { background: var(--paper-2); }
+.swatchRow.active {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+.swatchDrag {
+  color: var(--ink-faint);
+  opacity: 0;
+  cursor: grab;
+  display: grid; place-items: center;
+  margin-left: -2px;
+  transition: opacity .12s;
+  touch-action: none;
+}
+.swatchRow:hover .swatchDrag,
+.swatchRow.dragging .swatchDrag { opacity: 1; }
+.swatchRow.dragging { opacity: .55; }
+.swatchChip {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.10), var(--shadow-sm);
+}
+.swatchChip.bgChip { box-shadow: inset 0 0 0 1.5px var(--line); }
+.swatchLabel {
+  flex: 1 1 auto;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.swatchLabel .bgTag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-top: -1px;
+}
+.swatchEdit {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 7px;
+  color: var(--ink-faint);
+  opacity: 0;
+  transition: opacity .12s, background .12s, color .12s;
+  flex: 0 0 auto;
+}
+.swatchRow:hover .swatchEdit { opacity: 1; }
+.swatchEdit:hover { background: var(--panel); color: var(--ink); }
+
+/* ---------- Add color ---------- */
+.addSwatch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--line);
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: border-color .14s, color .14s, background .14s;
+}
+.addSwatch:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+.addSwatch .plusChip {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  display: grid; place-items: center;
+  background: var(--paper-2);
+  flex: 0 0 auto;
+}
+
+/* ---------- Color editor popover ---------- */
+.popoverBackdrop {
+  position: fixed; inset: 0;
+  z-index: 100;
+}
+.popover {
+  position: absolute;
+  z-index: 101;
+  width: 256px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.popoverRow { display: flex; flex-direction: column; gap: 6px; }
+.popoverRow label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.colorInputWrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.colorInputWrap input[type=color] {
+  -webkit-appearance: none; appearance: none;
+  width: 46px; height: 46px; border: none; border-radius: 10px;
+  background: none; cursor: pointer; padding: 0;
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.12);
+}
+.colorInputWrap input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+.colorInputWrap input[type=color]::-webkit-color-swatch { border: none; border-radius: 10px; }
+.hexInput {
+  flex: 1 1 auto;
+  height: 40px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  text-transform: uppercase;
+  outline: none;
+}
+.hexInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.textInput {
+  height: 40px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  outline: none;
+}
+.textInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.popoverActions { display: flex; gap: 8px; justify-content: space-between; align-items: center; }
+.linkDanger {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--danger);
+  padding: 8px 10px; border-radius: 8px;
+}
+.linkDanger:hover { background: oklch(0.585 0.16 25 / 0.08); }
+.linkDanger:disabled { opacity: .35; cursor: default; }
+
+/* ---------- Mobile palette strip ---------- */
+.mobilePalette {
+  display: none;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 14px oklch(0.4 0.02 60 / 0.07);
+  z-index: 15;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (max-width: 860px) {
+  .mobilePalette { display: flex; }
+}
+.mobileStrip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mobileStrip::-webkit-scrollbar { display: none; }
+.mobileChip {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.10);
+  border: 2.5px solid transparent;
+  position: relative;
+  transition: transform .1s;
+}
+.mobileChip.active {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+.mobileChip.add {
+  box-shadow: none;
+  border: 2px dashed var(--line);
+  display: grid; place-items: center;
+  color: var(--ink-soft);
+}
+.mobileExpand {
+  flex: 0 0 auto;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--paper-2);
+  display: grid; place-items: center;
+  color: var(--ink-soft);
+}
+
+/* ---------- Expanded mobile palette sheet ---------- */
+.sheetBackdrop {
+  position: fixed; inset: 0;
+  background: oklch(0.3 0.02 60 / 0.3);
+  z-index: 150;
+  display: flex; align-items: flex-end;
+  animation: fade .14s ease;
+}
+@keyframes fade { from { opacity: 0; } }
+.sheet {
+  width: 100%;
+  background: var(--panel);
+  border-radius: 20px 20px 0 0;
+  max-height: 70vh;
+  display: flex; flex-direction: column;
+  animation: slideup .2s cubic-bezier(.2,.9,.3,1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@keyframes slideup { from { transform: translateY(100%); } }
+.sheetHandle { width: 38px; height: 4px; border-radius: 99px; background: var(--line); margin: 10px auto 4px; }
+.sheetHead { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px 10px; }
+.sheetHead h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.sheetList { overflow-y: auto; padding: 0 10px 12px; }
+
+/* ---------- Scrollbars ---------- */
+.paletteList::-webkit-scrollbar, .sheetList::-webkit-scrollbar { width: 8px; }
+.paletteList::-webkit-scrollbar-thumb, .sheetList::-webkit-scrollbar-thumb {
+  background: var(--line); border-radius: 99px; border: 2px solid var(--panel);
+}

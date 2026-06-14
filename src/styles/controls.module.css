@@ -1,0 +1,72 @@
+/* ============================================================
+   controls.module.css — shared button & icon-button primitives.
+   Reused by DesignTopBar, Dialog, and StitchingView.
+   Ported from design-reference/styles.css (.btn*, .iconbtn,
+   .icon-group, .v-divider) — token values unchanged.
+   ============================================================ */
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  transition: background .14s, color .14s, box-shadow .14s, transform .06s;
+}
+.btn:active { transform: translateY(1px); }
+
+.btnPrimary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-sm);
+}
+.btnPrimary:hover { background: var(--accent-press); }
+.btnPrimary:disabled {
+  background: var(--paper-2);
+  color: var(--ink-faint);
+  box-shadow: none;
+  cursor: default;
+  border: 1px solid var(--line);
+}
+
+.btnGhost {
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.btnGhost:hover { background: var(--paper-2); color: var(--ink); }
+
+.btnDanger { background: var(--danger); color: #fff; }
+.btnDanger:hover { filter: brightness(1.06); }
+
+/* ---------- Icon buttons ---------- */
+.iconbtn {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--ink-soft);
+  border: 1px solid transparent;
+  transition: background .14s, color .14s, border-color .14s;
+}
+.iconbtn:hover { background: var(--paper-2); color: var(--ink); }
+.iconbtn:active { background: var(--line-soft); }
+.iconbtn:disabled { color: var(--ink-faint); opacity: .45; cursor: default; background: none; }
+.bordered { border-color: var(--line); }
+
+.iconGroup {
+  display: inline-flex;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.iconGroup .iconbtn { border-radius: 0; width: 36px; height: 36px; border: none; }
+.iconGroup .iconbtn + .iconbtn { border-left: 1px solid var(--line); }
+
+/* ---------- Divider ---------- */
+.vDivider { width: 1px; align-self: stretch; background: var(--line); margin: 6px 2px; }

@@ -1,0 +1,95 @@
+/* ============================================================
+   App.module.css
+   Ported from design-reference/styles.css — app shell, workspace,
+   design canvas wrap, zoom overlay, dimension badge, canvas hint.
+   Token values + breakpoints unchanged.
+   ============================================================ */
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.workspace {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  position: relative;
+}
+
+/* ---------- Design canvas ---------- */
+.canvasWrap {
+  flex: 1 1 auto;
+  position: relative;
+  min-width: 0;
+  background: var(--paper-2);
+  overflow: hidden;
+}
+.canvasEl { display: block; width: 100%; height: 100%; }
+.canvasEl.modePaint { cursor: crosshair; }
+
+@media (max-width: 860px) {
+  .canvasWrap { padding-bottom: 64px; }
+}
+
+/* On-canvas zoom overlay */
+.zoomOverlay {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  z-index: 7;
+}
+.zoomOverlay button {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  color: var(--ink-soft);
+  transition: background .12s, color .12s;
+}
+.zoomOverlay button:hover { background: var(--paper-2); color: var(--ink); }
+.zoomOverlay button:active { background: var(--line-soft); }
+.zoomOverlay button + button { border-top: 1px solid var(--line); }
+
+@media (max-width: 860px) {
+  .canvasWrap .zoomOverlay { bottom: 82px; }
+}
+
+/* Selection dimension badge */
+.dimBadge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 4px 9px;
+  border-radius: 7px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  z-index: 5;
+}
+
+/* Empty-canvas hint */
+.canvasHint {
+  position: absolute;
+  left: 50%; top: 18px;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  z-index: 4;
+}

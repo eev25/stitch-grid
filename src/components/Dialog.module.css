@@ -1,0 +1,40 @@
+/* ============================================================
+   Dialog.module.css
+   Ported from design-reference/styles.css — modal dialogs
+   ("new pattern" destructive confirm, "new session" confirm).
+   Token values unchanged.
+   ============================================================ */
+
+.dialogBackdrop {
+  position: fixed; inset: 0;
+  background: oklch(0.3 0.02 60 / 0.32);
+  backdrop-filter: blur(2px);
+  display: grid; place-items: center;
+  z-index: 200;
+  padding: 24px;
+  animation: fade .14s ease;
+}
+@keyframes fade { from { opacity: 0; } }
+
+.dialog {
+  width: 100%; max-width: 384px;
+  background: var(--panel);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  animation: pop .16s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes pop { from { transform: scale(.96); opacity: 0; } }
+
+.dialogIcon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--accent-tint); color: var(--accent);
+  margin-bottom: 14px;
+}
+.dialogIcon.warn { background: oklch(0.585 0.16 25 / 0.12); color: var(--danger); }
+
+.dialog h2 { margin: 0 0 7px; font-size: 18px; font-weight: 700; color: var(--ink); }
+.dialog p { margin: 0 0 20px; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+
+.dialogActions { display: flex; gap: 10px; justify-content: flex-end; }

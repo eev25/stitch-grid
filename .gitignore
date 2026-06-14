@@ -1,0 +1,37 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+*.local
+
+# testing
+test-results
+playwright-report
+blob-report
+playwright/.cache
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# OS
+.DS_Store
+
+# internal
+design-reference/

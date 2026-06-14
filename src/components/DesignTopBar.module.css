@@ -1,0 +1,120 @@
+/* ============================================================
+   DesignTopBar.module.css
+   Ported from design-reference/styles.css (.topbar, .wordmark*,
+   .name-field, .segmented/.seg-btn, .hide-mobile/.only-mobile).
+   Token values + breakpoints unchanged.
+   ============================================================ */
+
+.topbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  z-index: 20;
+  min-height: 60px;
+}
+
+.topbarSpacer { flex: 1 1 auto; }
+
+/* ---------- Wordmark ---------- */
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-right: 4px;
+  user-select: none;
+}
+.wordmarkMark {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.wordmarkText {
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ---------- Pattern name field ---------- */
+.nameField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  height: 38px;
+  transition: border-color .15s, box-shadow .15s;
+  max-width: 230px;
+}
+.nameField:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+.nameField input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+  width: 100%;
+  min-width: 60px;
+}
+.nameField .editDot { color: var(--ink-faint); flex: 0 0 auto; display: grid; place-items: center; }
+
+/* ---------- Segmented tool control ---------- */
+.segmented {
+  display: inline-flex;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+}
+.segBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transition: background .14s, color .14s, box-shadow .14s;
+}
+.segBtn:hover { color: var(--ink); }
+.segBtn.active {
+  background: var(--panel);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.segBtn svg { flex: 0 0 auto; }
+.segText { display: inline; }
+
+/* ---------- Responsive ---------- */
+.onlyMobile { display: none; }
+
+@media (max-width: 860px) {
+  .onlyMobile { display: flex; }
+  .hideMobile { display: none !important; }
+  .topbar { gap: 10px; padding: 9px 12px; }
+  .nameField { max-width: 150px; }
+}
+
+@media (max-width: 560px) {
+  .segBtn .segText { display: none; }
+  .segBtn { padding: 0 10px; }
+  .wordmarkText { display: none; }
+  .nameField { max-width: 120px; }
+}

@@ -1,0 +1,37 @@
+/* ============================================================
+   Global resets & base element styles.
+   Ported from design-reference/styles.css (lines 46-77).
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  touch-action: none;
+}
+
+#root { height: 100%; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+input { font-family: inherit; }
+
+::selection { background: var(--accent-tint-2); }

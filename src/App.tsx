@@ -22,7 +22,7 @@ export function App() {
     topView, editor, setEditor, dialog, setDialog,
     seq, activeColor, canBegin, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
-    updateSwatch, deleteSwatch, addSwatch, reorder,
+    updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder,
     beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo,
     doNewPattern,
   } = usePatternStore();
@@ -59,7 +59,7 @@ export function App() {
       <div className={styles.workspace}>
         <PaletteSidebar palette={palette} bg={bg} activeId={activeId}
           onSelect={setActiveId}
-          onEdit={(id, rect) => setEditor({ id, rect })}
+          onEdit={(id, rect) => { setActiveId(id); setEditor({ id, rect }); }}
           onAdd={addSwatch} onReorder={reorder} />
 
         <div className={styles.canvasWrap} ref={canvas.wrapRef}>
@@ -89,11 +89,12 @@ export function App() {
       </div>
 
       <MobilePalette palette={palette} bg={bg} activeId={activeId}
-        onSelect={setActiveId} onEdit={(id, rect) => setEditor({ id, rect })} onAdd={addSwatch} />
+        onSelect={setActiveId} onEdit={(id, rect) => { setActiveId(id); setEditor({ id, rect }); }} onAdd={addSwatch} />
 
       {editor && editingSwatch && (
         <ColorEditor swatch={editingSwatch} isBg={editor.id === bg.id} anchorRect={editor.rect}
-          onChange={updateSwatch} onDelete={deleteSwatch} onClose={() => setEditor(null)} />
+          onChange={updateSwatch} onDelete={deleteSwatch} onSetBackground={setAsBackground}
+          onClose={() => setEditor(null)} />
       )}
 
       {dialog && (

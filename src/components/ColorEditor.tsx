@@ -22,13 +22,14 @@ export interface ColorEditorProps {
   anchorRect: DOMRect;
   onChange: (sw: Swatch) => void;
   onDelete: (id: string) => void;
+  onSetBackground: (id: string) => void;
   onClose: () => void;
 }
 
 interface PopoverPos { left: number; top: number; }
 
 export function ColorEditor(props: ColorEditorProps) {
-  const { swatch, isBg, anchorRect, onChange, onDelete, onClose } = props;
+  const { swatch, isBg, anchorRect, onChange, onDelete, onSetBackground, onClose } = props;
   const [hex, setHex] = useState(swatch.color);
   const [label, setLabel] = useState(swatch.label);
   const [hexText, setHexText] = useState(swatch.color);
@@ -79,6 +80,13 @@ export function ColorEditor(props: ColorEditorProps) {
             onChange={(e) => { setLabel(e.target.value); commit(null, e.target.value); }}
             placeholder="Color name" />
         </div>
+        {!isBg && (
+          <button className={`${controls.btn} ${controls.btnGhost} ${styles.popoverWide}`} style={{ height: 36 }}
+            onClick={() => onSetBackground(swatch.id)}
+            title="Swap this color with the background">
+            Set as background
+          </button>
+        )}
         <div className={styles.popoverActions}>
           <button className={styles.linkDanger} disabled={isBg}
             onClick={() => { if (!isBg) onDelete(swatch.id); }}

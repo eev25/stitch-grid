@@ -182,6 +182,7 @@
   outline: none;
 }
 .textInput:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.popoverWide { width: 100%; justify-content: center; }
 .popoverActions { display: flex; gap: 8px; justify-content: space-between; align-items: center; }
 .linkDanger {
   display: inline-flex; align-items: center; gap: 6px;

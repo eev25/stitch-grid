@@ -8,7 +8,16 @@ import { test, expect, type Page } from "@playwright/test";
 
 const STORAGE_KEY = "crochet-designer-v2";
 
+interface PersistedSwatch {
+  id: string;
+  color: string;
+  label: string;
+}
+
 interface PersistedShape {
+  bg: PersistedSwatch;
+  palette: PersistedSwatch[];
+  activeId: string;
   cells: Record<string, string>;
   area: { x0: number; y0: number; x1: number; y1: number } | null;
 }
@@ -100,5 +109,36 @@ test.describe("Crochet Pattern Designer", () => {
     await undoBtn.click();
     await expect(nextBtn).toBeVisible();
     await expect(undoBtn).toBeDisabled();
+  });
+
+  test("Set as background swaps a swatch with the background", async ({ page }) => {
+    await page.goto("/");
+
+    // Wait for the initial save so we know Charcoal's slot in the palette.
+    await expect.poll(async () => (await readStore(page)) !== null, { timeout: 2000 }).toBe(true);
+    const before = (await readStore(page))!;
+    const charcoalIdx = before.palette.findIndex((s) => s.label === "Charcoal");
+    expect(charcoalIdx).toBeGreaterThanOrEqual(0);
+    const charcoalId = before.palette[charcoalIdx].id;
+
+    // The edit pencil also selects the swatch it opens.
+    const charcoalRow = page.locator("aside").getByText("Charcoal", { exact: true }).locator("..");
+    await charcoalRow.locator('button[title="Edit color"]').click();
+    await expect.poll(async () => (await readStore(page))?.activeId, { timeout: 2000 }).toBe(charcoalId);
+
+    // Swapping closes the popover.
+    const setBg = page.getByRole("button", { name: "Set as background" });
+    await setBg.click();
+    await expect(setBg).toHaveCount(0);
+
+    await expect.poll(async () => {
+      const store = await readStore(page);
+      if (!store) return null;
+      const slot = store.palette[charcoalIdx];
+      return { bg: [store.bg.color, store.bg.label], slot: [slot.id, slot.color, slot.label] };
+    }, { timeout: 2000 }).toEqual({
+      bg: ["#2e2b29", "Charcoal"],
+      slot: [charcoalId, "#f4efe3", "Cream"],
+    });
   });
 });

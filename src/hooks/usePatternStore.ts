@@ -6,6 +6,7 @@
    ============================================================ */
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import * as E from "../engine/engine";
+import { swapWithBackground } from "../engine/palette";
 import type {
   Area, Cells, DialogState, EditorState, HistoryState,
   PersistedState, Stitch, Swatch, Tool, TopView, WorldPoint,
@@ -139,6 +140,7 @@ export interface PatternStore {
 
   updateSwatch: (sw: Swatch) => void;
   deleteSwatch: (id: string) => void;
+  setAsBackground: (id: string) => void;
   addSwatch: (rect: DOMRect) => void;
   reorder: (fromId: string, toId: string) => void;
   pickColorAt: (x: number, y: number) => void;
@@ -258,6 +260,15 @@ export function usePatternStore(): PatternStore {
     setEditor(null);
   }, []);
 
+  // swap swatch `id` with the background (color + label); cells are untouched
+  const setAsBackground = useCallback((id: string) => {
+    const next = swapWithBackground(bg, palette, activeId, id);
+    setBg(next.bg);
+    setPalette(next.palette);
+    setActiveId(next.activeId);
+    setEditor(null);
+  }, [bg, palette, activeId]);
+
   const addSwatch = useCallback((rect: DOMRect) => {
     const ns: Swatch = { id: uid(), color: "#b58b6a", label: "New color" };
     setPalette((p) => [...p, ns]);
@@ -347,7 +358,7 @@ export function usePatternStore(): PatternStore {
     topView, setTopView, editor, setEditor, dialog, setDialog,
     seq, activeColor, canBegin: !!area, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
-    updateSwatch, deleteSwatch, addSwatch, reorder, pickColorAt,
+    updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder, pickColorAt,
     beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo,
     doNewPattern,
   };

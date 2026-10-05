@@ -31,8 +31,6 @@
   --danger:     oklch(0.585 0.16 25);
 
   /* Canvas chrome */
-  --grid-line:  oklch(0.86 0.012 70);
-  --grid-line-strong: oklch(0.78 0.016 68);
   --working-dash: oklch(0.55 0.02 60);
   --stitch-backdrop: oklch(0.93 0.008 74);
 

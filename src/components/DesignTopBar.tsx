@@ -59,23 +59,25 @@ export function DesignTopBar(props: DesignTopBarProps) {
       <div className={styles.topbarSpacer} />
 
       {/* Begin stitching */}
-      <button className={`${controls.btn} ${controls.btnPrimary} ${styles.hideMobile}`} disabled={!canBegin} onClick={onBegin}>
-        <Icons.Begin size={17} /> Begin Stitching
-      </button>
       <button
-        className={`${controls.iconbtn} ${controls.bordered} ${styles.onlyMobile}`}
+        className={`${controls.btn} ${controls.btnPrimary} ${styles.beginBtn}`}
         disabled={!canBegin}
         onClick={onBegin}
         title="Begin Stitching"
-        style={{ color: canBegin ? "var(--accent)" : undefined }}
+        aria-label="Begin Stitching"
       >
-        <Icons.Begin size={19} />
+        <Icons.Begin size={17} />
+        <span className={styles.beginText}>Begin Stitching</span>
       </button>
 
-
       <div className={`${controls.vDivider} ${styles.hideMobile}`} />
-      <button className={`${controls.iconbtn} ${controls.bordered} ${styles.hideMobile}`} onClick={onNewPattern} title="New pattern">
-        <Icons.Sparkle size={18} />
+      <button
+        className={`${controls.iconbtn} ${controls.bordered}`}
+        onClick={onNewPattern}
+        title="New pattern"
+        aria-label="New pattern"
+      >
+        <Icons.Trash size={18} />
       </button>
     </header>
   );

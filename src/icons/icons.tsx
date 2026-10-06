@@ -216,9 +216,5 @@ export function ChevronUp(p: IconProps) {
   return (<S {...p}><path d="M6 15l6-6 6 6" /></S>);
 }
 
-export function Sparkle(p: IconProps) {
-  return (<S {...p}><path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6Z" /></S>);
-}
-
 /** Icon component reference, for props like `icon={Pencil}`. */
 export type IconComponent = (p: IconProps) => ReactNode;

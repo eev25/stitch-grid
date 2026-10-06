@@ -8,7 +8,7 @@ import {
   type Dispatch, type RefObject, type SetStateAction,
 } from "react";
 import * as E from "../engine/engine";
-import { isTouchEvent, localPt, type CanvasPointerEvent } from "./canvasPointer";
+import { isTouchEvent, localPt, pinchDist, type CanvasPointerEvent } from "./canvasPointer";
 import type { Area, Cells, HandleDef, Swatch, Tool, TopView, View, WorldPoint } from "../types";
 
 export type { CanvasPointerEvent } from "./canvasPointer";
@@ -49,7 +49,7 @@ export interface DesignCanvasApi {
 }
 
 type DragState =
-  | { type: "twofinger"; x: number; y: number; panX: number; panY: number }
+  | { type: "pinch"; d: number; x: number; y: number; cell: number; panX: number; panY: number }
   | { type: "resize"; handle: HandleDef; rect: Area }
   | { type: "line" | "rect"; start: WorldPoint; prev: Cells; map: Cells }
   | { type: "paint"; erase: boolean; last: WorldPoint; prev: Cells; map: Cells; touched: string[] };
@@ -211,14 +211,19 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     if ("button" in e && e.button === 1) return;
     const canvas = canvasRef.current; if (!canvas) return;
 
-    // Two-finger touch -> pan in any mode.
+    // Two-finger touch -> pan + pinch-zoom in any mode.
     if (isTouchEvent(e) && e.touches.length >= 2) {
+      // The first finger already started a stroke/resize; discard it so the
+      // gesture doesn't leave a stray cell behind.
+      const d = drag.current;
+      if (d && (d.type === "paint" || d.type === "line" || d.type === "rect")) setCells(d.prev);
+      if (d && d.type === "resize") { setArea(d.rect); setResizing(false); }
       const r = canvas.getBoundingClientRect();
       const t0 = e.touches[0], t1 = e.touches[1];
       const mx = (t0.clientX + t1.clientX) / 2 - r.left;
       const my = (t0.clientY + t1.clientY) / 2 - r.top;
       const v = viewRef.current;
-      drag.current = { type: "twofinger", x: mx, y: my, panX: v.panX, panY: v.panY };
+      drag.current = { type: "pinch", d: pinchDist(e), x: mx, y: my, cell: v.cell, panX: v.panX, panY: v.panY };
       return;
     }
     const p = localPt(e, canvas);
@@ -272,15 +277,18 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     const d = drag.current; if (!d) return;
     const canvas = canvasRef.current; if (!canvas) return;
 
-    if (d.type === "twofinger") {
+    if (d.type === "pinch") {
       if (!isTouchEvent(e) || e.touches.length < 2) return;
       const r = canvas.getBoundingClientRect();
       const t0 = e.touches[0], t1 = e.touches[1];
       const mx = (t0.clientX + t1.clientX) / 2 - r.left;
       const my = (t0.clientY + t1.clientY) / 2 - r.top;
       const v = viewRef.current;
-      v.panX = d.panX + (mx - d.x);
-      v.panY = d.panY + (my - d.y);
+      // world point under the gesture's start midpoint stays pinned to the live midpoint
+      const cx = (d.x - d.panX) / d.cell, cy = (d.y - d.panY) / d.cell;
+      v.cell = Math.max(8, Math.min(72, d.cell * (pinchDist(e) / d.d)));
+      v.panX = mx - cx * v.cell;
+      v.panY = my - cy * v.cell;
       redraw(); setViewTick((t) => t + 1);
       return;
     }

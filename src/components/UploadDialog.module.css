@@ -78,4 +78,4 @@
 
 .note, .error { margin: 4px 0 14px; font-size: 13px; line-height: 1.45; }
 .note { color: var(--ink-soft); }
-.note.warn, .error { color: var(--danger); font-weight: 600; }
+.error { color: var(--danger); font-weight: 600; }

@@ -1,7 +1,7 @@
 /* ============================================================
    UploadDialog — preview an uploaded image, choose how many
    colors to extract, review/edit them, and add the image as the
-   working area (optionally clearing existing work first).
+   working area.
    ============================================================ */
 import { useEffect, useMemo, useState } from "react";
 import * as Icons from "../icons/icons";
@@ -35,7 +35,6 @@ export interface UploadResult {
 export interface UploadDialogProps {
   file: File;
   palette: Swatch[];
-  hasStitchProgress: boolean;
   onCancel: () => void;
   onAdd: (result: UploadResult) => Promise<void>;
 }
@@ -49,7 +48,7 @@ const extract = (small: ImageData, k: number): ExtractedColor[] =>
   extractPalette(small, k).map((color) => ({ color, label: null, checked: true }));
 
 export function UploadDialog(props: UploadDialogProps) {
-  const { file, palette, hasStitchProgress, onCancel, onAdd } = props;
+  const { file, palette, onCancel, onAdd } = props;
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [count, setCount] = useState(DEFAULT_COLOR_COUNT);
@@ -189,9 +188,8 @@ export function UploadDialog(props: UploadDialogProps) {
               <span>Clear existing work</span>
             </label>
             {clear && (
-              <div className={`${styles.note}${hasStitchProgress ? ` ${styles.warn}` : ""}`} role="alert">
-                Erases your cells, palette, and undo history
-                {hasStitchProgress ? ", and discards your stitching progress" : ""}. This can&apos;t be undone.
+              <div className={styles.note} role="alert">
+                Erases your cells, palette, and any stitching progress. 
               </div>
             )}
           </>

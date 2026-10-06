@@ -130,13 +130,14 @@
 }
 
 /* ---------- Color editor popover ---------- */
+/* Sits above the mobile palette sheet (150), below modal dialogs (200). */
 .popoverBackdrop {
   position: fixed; inset: 0;
-  z-index: 100;
+  z-index: 160;
 }
 .popover {
-  position: absolute;
-  z-index: 101;
+  position: fixed;
+  z-index: 161;
   width: 256px;
   background: var(--panel);
   border: 1px solid var(--line);

@@ -10,7 +10,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 16px;
+  /* No left padding: the wordmark supplies its own inset (see below). */
+  padding: 10px 16px 10px 0;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   box-shadow: var(--shadow-sm);
@@ -21,12 +22,25 @@
 .topbarSpacer { flex: 1 1 auto; }
 
 /* ---------- Wordmark ---------- */
+/* Starts at the topbar's left edge and is exactly as wide as the palette
+   sidebar, so its divider (::after) sits on the sidebar's right border. */
 .wordmark {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: var(--palette-width);
   display: flex;
   align-items: center;
   gap: 9px;
-  padding-right: 4px;
+  padding-left: 16px;
   user-select: none;
+}
+.wordmark::after {
+  content: "";
+  position: absolute;
+  right: 0; top: 6px; bottom: 6px;
+  width: 1px;
+  background: var(--line);
 }
 .wordmarkMark {
   width: 26px; height: 26px;

@@ -38,6 +38,9 @@
   --radius-sm:  9px;
   --radius-lg:  18px;
 
+  /* Desktop palette sidebar width; the top bar's wordmark divider aligns to it. */
+  --palette-width: 196px;
+
   --shadow-sm: 0 1px 2px oklch(0.4 0.02 60 / 0.06), 0 1px 1px oklch(0.4 0.02 60 / 0.04);
   --shadow-md: 0 4px 14px oklch(0.4 0.03 60 / 0.10), 0 1px 3px oklch(0.4 0.02 60 / 0.07);
   --shadow-lg: 0 18px 48px oklch(0.35 0.03 60 / 0.18), 0 4px 12px oklch(0.35 0.03 60 / 0.10);

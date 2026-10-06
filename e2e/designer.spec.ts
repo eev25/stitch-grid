@@ -192,4 +192,20 @@ test.describe("Crochet Pattern Designer", () => {
     await expect.poll(labels, { timeout: 2000 })
       .toEqual(["Mustard", "Terracotta", "Rose", ...before.slice(3)]);
   });
+
+  test("the top bar's wordmark divider lines up with the palette sidebar's border", async ({ page }) => {
+    await page.goto("/");
+
+    // The divider is the wordmark's ::after, so measure it from computed style.
+    const dividerLeft = await page.locator("header").getByText("Stitch Grid").evaluate((text) => {
+      const wordmark = text.parentElement!;
+      const after = getComputedStyle(wordmark, "::after");
+      return wordmark.getBoundingClientRect().right - parseFloat(after.right) - parseFloat(after.width);
+    });
+    const borderLeft = await page.locator("aside").evaluate((aside) => {
+      return aside.getBoundingClientRect().right - parseFloat(getComputedStyle(aside).borderRightWidth);
+    });
+
+    expect(dividerLeft).toBeCloseTo(borderLeft, 1);
+  });
 });

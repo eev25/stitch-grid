@@ -45,8 +45,6 @@ export function DesignTopBar(props: DesignTopBarProps) {
         <span className={styles.wordmarkText}>Stitch Grid</span>
       </div>
 
-      <div className={`${controls.vDivider} ${styles.hideMobile}`} />
-
       {/* Paint tools */}
       <div className={styles.segmented}>
         <Seg icon={Icons.Pencil} label="Pencil" active={tool === "pencil"} onClick={() => setTool("pencil")} />

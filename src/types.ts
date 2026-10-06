@@ -74,7 +74,6 @@ export interface HandleDef {
 
 /** Full persisted pattern state (localStorage shape). */
 export interface PersistedState {
-  name: string;
   bg: Swatch;
   palette: Swatch[];
   activeId: string;

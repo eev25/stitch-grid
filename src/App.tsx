@@ -16,7 +16,7 @@ import styles from "./App.module.css";
 
 export function App() {
   const {
-    seeded, name, setName, bg, palette, activeId, setActiveId,
+    seeded, bg, palette, activeId, setActiveId,
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, editor, setEditor, dialog, setDialog,
     seq, activeColor, canBegin, canUndo, canRedo, editingSwatch,
@@ -40,7 +40,7 @@ export function App() {
 
   if (topView === "stitching" && stitch) {
     return (
-      <StitchingView name={name} sel={stitch.sel} seq={seq} pointer={stitch.pointer}
+      <StitchingView sel={stitch.sel} seq={seq} pointer={stitch.pointer}
         cells={cells} bg={bg.color}
         onNext={stitchNext} onUndo={stitchUndo} onExit={exitStitching} />
     );
@@ -49,7 +49,6 @@ export function App() {
   return (
     <div className={styles.app}>
       <DesignTopBar
-        name={name} onName={setName}
         tool={tool} setTool={setTool}
         canBegin={canBegin} onBegin={beginStitching}
         onNewPattern={() => setDialog({ type: "new" })} />

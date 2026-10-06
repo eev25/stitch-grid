@@ -25,8 +25,6 @@ function Seg({ icon: Icon, label, active, onClick }: SegProps) {
 }
 
 export interface DesignTopBarProps {
-  name: string;
-  onName: Dispatch<SetStateAction<string>>;
   tool: Tool;
   setTool: Dispatch<SetStateAction<Tool>>;
   canBegin: boolean;
@@ -36,7 +34,7 @@ export interface DesignTopBarProps {
 
 export function DesignTopBar(props: DesignTopBarProps) {
   const {
-    name, onName, tool, setTool,
+    tool, setTool,
     canBegin, onBegin, onNewPattern,
   } = props;
 
@@ -45,17 +43,6 @@ export function DesignTopBar(props: DesignTopBarProps) {
       <div className={`${styles.wordmark} ${styles.hideMobile}`}>
         <span className={styles.wordmarkMark}><Icons.Yarn size={24} /></span>
         <span className={styles.wordmarkText}>Stitch Grid</span>
-      </div>
-
-      <div className={styles.nameField} title="Pattern name">
-        <input
-          value={name}
-          onChange={(e) => onName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-          spellCheck={false}
-          aria-label="Pattern name"
-        />
-        <span className={styles.editDot}><Icons.Edit size={14} /></span>
       </div>
 
       <div className={`${controls.vDivider} ${styles.hideMobile}`} />

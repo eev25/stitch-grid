@@ -11,7 +11,6 @@ import controls from "../styles/controls.module.css";
 import styles from "./Stitching.module.css";
 
 export interface StitchingViewProps {
-  name: string;
   sel: Area;
   seq: WorldPoint[];
   pointer: number;
@@ -30,7 +29,7 @@ type StitchDragState =
   | { type: "pinch"; d: number; x: number; y: number; cell: number; panX: number; panY: number };
 
 export function StitchingView(props: StitchingViewProps) {
-  const { name, sel, seq, pointer, cells, bg, onNext, onUndo, onExit } = props;
+  const { sel, seq, pointer, cells, bg, onNext, onUndo, onExit } = props;
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -213,9 +212,6 @@ export function StitchingView(props: StitchingViewProps) {
         <button className={`${controls.btn} ${controls.btnGhost}`} onClick={onExit}>
           <Icons.Exit size={18} /> Exit Stitching
         </button>
-        <span className={`${styles.stitchTitle} ${styles.hideMobile}`}>
-          <span className={styles.dot} />{name}
-        </span>
         <div className={styles.topbarSpacer} />
         {done && (
           <span className={`${styles.stitchCompleteTag} ${styles.hideMobile}`}>

@@ -23,7 +23,6 @@ function defaultPalette(): Swatch[] {
 const defaultBg = (): Swatch => ({ id: "bg", color: "#f4efe3", label: "Cream" });
 
 interface InitState {
-  name: string;
   bg: Swatch;
   palette: Swatch[];
   activeId: string;
@@ -39,7 +38,6 @@ function freshState(withSample: boolean): InitState {
   const palette = defaultPalette();
   const cells = withSample ? sampleCells(palette.map((s) => s.color)) : {};
   return {
-    name: "Untitled Pattern",
     bg: defaultBg(),
     palette,
     activeId: palette[0].id,
@@ -61,7 +59,6 @@ function loadState(): InitState {
         // back-compat: derive area from old selection / painted bounds
         const area = s.area !== undefined ? s.area : (s.selection ?? E.computeWorkingArea(s.cells ?? {}));
         return {
-          name: s.name ?? "Untitled Pattern",
           bg: s.bg,
           palette: s.palette,
           activeId: s.activeId ?? s.bg.id,
@@ -85,8 +82,6 @@ const sameSel = (a: Area | null, b: Area | null): boolean =>
 export interface PatternStore {
   /** True when this session started from the seeded sample motif. */
   seeded: boolean;
-  name: string;
-  setName: Dispatch<SetStateAction<string>>;
   bg: Swatch;
   palette: Swatch[];
   activeId: string;
@@ -135,7 +130,6 @@ export interface PatternStore {
 
 export function usePatternStore(): PatternStore {
   const init = useMemo(loadState, []);
-  const [name, setName] = useState(init.name);
   const [bg, setBg] = useState(init.bg);
   const [palette, setPalette] = useState(init.palette);
   const [activeId, setActiveId] = useState(init.activeId);
@@ -169,14 +163,14 @@ export function usePatternStore(): PatternStore {
   useEffect(() => {
     const t = setTimeout(() => {
       try {
-        const payload: PersistedState = { name, bg, palette, activeId, cells, area, stitch, tool, _uid };
+        const payload: PersistedState = { bg, palette, activeId, cells, area, stitch, tool, _uid };
         localStorage.setItem(STORE_KEY, JSON.stringify(payload));
       } catch {
         // ignore quota / serialization errors
       }
     }, 250);
     return () => clearTimeout(t);
-  }, [name, bg, palette, activeId, cells, area, stitch, tool]);
+  }, [bg, palette, activeId, cells, area, stitch, tool]);
 
   // ---------- history ----------
   const pushHistory = useCallback((prevCells: Cells) => {
@@ -324,7 +318,7 @@ export function usePatternStore(): PatternStore {
   // ---------- new pattern ----------
   const doNewPattern = useCallback(() => {
     const f = freshState(false);
-    setName(f.name); setBg(f.bg); setPalette(f.palette); setActiveId(f.activeId);
+    setBg(f.bg); setPalette(f.palette); setActiveId(f.activeId);
     setCells({}); setArea(null); setStitch(null);
     setTool("pencil");
     setHistory({ past: [], future: [] });
@@ -333,7 +327,7 @@ export function usePatternStore(): PatternStore {
 
   return {
     seeded: init.seeded,
-    name, setName, bg, palette, activeId, setActiveId,
+    bg, palette, activeId, setActiveId,
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, setTopView, editor, setEditor, dialog, setDialog,
     seq, activeColor, canBegin: !!area, canUndo, canRedo, editingSwatch,

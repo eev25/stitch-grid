@@ -22,12 +22,6 @@
   z-index: 10;
   min-height: 62px;
 }
-.stitchTitle {
-  font-size: 14px; font-weight: 700; color: var(--ink);
-  display: flex; align-items: center; gap: 9px;
-}
-.stitchTitle .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-
 .topbarSpacer { flex: 1 1 auto; }
 
 /* ---------- Canvas ---------- */

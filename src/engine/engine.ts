@@ -55,6 +55,14 @@ export function computeWorkingArea(cells: Cells): Area | null {
   return { x0: minX, y0: minY, x1: maxX, y1: maxY };
 }
 
+// Largest whole-px cell size (<= maxCell, >= 8) at which `area` plus a
+// one-cell margin on every side fits a w x h canvas.
+export function fitCell(area: Area, w: number, h: number, maxCell: number): number {
+  const cols = area.x1 - area.x0 + 3;
+  const rows = area.y1 - area.y0 + 3;
+  return Math.max(8, Math.min(maxCell, Math.floor(Math.min(w / cols, h / rows))));
+}
+
 // ---- turned-row stitch sequence ----
 // sel: {x0,y0,x1,y1} inclusive world cells. Row 1 = bottom (max y).
 // odd rows (1st from bottom) left->right, even rows right->left.

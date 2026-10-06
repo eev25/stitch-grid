@@ -28,11 +28,11 @@ async function readStore(page: Page): Promise<PersistedShape | null> {
 }
 
 test.describe("Crochet Pattern Designer", () => {
-  test("loads with the seeded heart pattern and Begin Stitching enabled", async ({ page }) => {
+  test("loads with the seeded flower pattern and Begin Stitching enabled", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.locator("canvas")).toBeVisible();
-    // The seeded heart motif fills the working area, so stitching can begin
+    // The seeded flower motif fills the working area, so stitching can begin
     // immediately and the empty-canvas hint should not be shown.
     await expect(page.getByRole("button", { name: "Begin Stitching" })).toBeEnabled();
     await expect(page.getByText("Pick a color, then paint your first stitch")).toHaveCount(0);
@@ -46,25 +46,28 @@ test.describe("Crochet Pattern Designer", () => {
     const box = await canvas.boundingBox();
     if (!box) throw new Error("canvas has no bounding box");
 
+    // The seeded flower already uses Charcoal, so count its cells.
+    const charcoalCells = async () => {
+      const store = await readStore(page);
+      return store ? Object.values(store.cells).filter((c) => c === "#2e2b29").length : null;
+    };
+    await expect.poll(charcoalCells, { timeout: 2000 }).not.toBeNull();
+    const before = (await charcoalCells())!;
+
     // Select the "Charcoal" swatch in the palette sidebar.
     await page.getByText("Charcoal", { exact: true }).click();
 
-    // Paint a cell well outside the seeded heart's bounding box (the heart
-    // spans world x in [-5, 5]; clicking ~200px right of center at the
-    // default 30px cell size lands on world cell (6, 0)).
-    await page.mouse.click(box.x + box.width / 2 + 200, box.y + box.height / 2);
+    // Paint a cell well outside the seeded flower's bounding box (the flower
+    // spans world x in [-6, 6] and is centered in view; clicking 300px right
+    // of center lands on world x >= 10 at any cell size <= 30px).
+    await page.mouse.click(box.x + box.width / 2 + 300, box.y + box.height / 2);
 
     // Wait for the ~250ms debounced localStorage write to pick up the new cell.
-    await expect.poll(async () => {
-      const store = await readStore(page);
-      return store ? Object.values(store.cells).includes("#2e2b29") : false;
-    }, { timeout: 2000 }).toBe(true);
+    await expect.poll(charcoalCells, { timeout: 2000 }).toBe(before + 1);
 
     await page.reload();
 
-    const store = await readStore(page);
-    expect(store).not.toBeNull();
-    expect(Object.values(store!.cells)).toContain("#2e2b29");
+    expect(await charcoalCells()).toBe(before + 1);
     await expect(page.locator("canvas")).toBeVisible();
   });
 

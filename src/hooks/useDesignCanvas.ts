@@ -31,6 +31,8 @@ interface UseDesignCanvasOptions {
   topView: TopView;
   pushHistory: (prevCells: Cells) => void;
   commitCells: (prevCells: Cells, nextCells: Cells) => void;
+  /** Zoom out (never in) on first layout so the initial working area fits. */
+  fitOnLoad?: boolean;
 }
 
 export interface DesignCanvasApi {
@@ -64,13 +66,15 @@ function paintAt(map: Cells, x: number, y: number, erase: boolean, color: string
 }
 
 export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
-  const { cells, setCells, bg, area, setArea, activeColor, tool, topView, pushHistory, commitCells } = opts;
+  const { cells, setCells, bg, area, setArea, activeColor, tool, topView, pushHistory, commitCells, fitOnLoad } = opts;
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 30 });
   const sizeRef = useRef({ w: 0, h: 0 });
   const drag = useRef<DragState | null>(null);
+  // initial working area to frame on first layout (captured once at mount)
+  const fitAreaRef = useRef(fitOnLoad ? area : null);
 
   // viewTick forces a re-render after viewRef (pan/zoom) mutations that
   // don't otherwise change React state, so derived UI (e.g. dimBadge) refreshes.
@@ -87,15 +91,34 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     E.drawDesign(ctx, { w, h, view: viewRef.current, cells, bg: bg.color, area });
   }, [cells, bg.color, area]);
 
+  // Center the view on a world-cell rect at the current zoom.
+  const centerViewOn = useCallback((rect: Area) => {
+    const v = viewRef.current; const { w, h } = sizeRef.current;
+    if (!w || !h) return;
+    const cx = (rect.x0 + rect.x1 + 1) / 2;
+    const cy = (rect.y0 + rect.y1 + 1) / 2;
+    v.panX = w / 2 - cx * v.cell;
+    v.panY = h / 2 - cy * v.cell;
+  }, []);
+
   const measure = useCallback(() => {
     const el = wrapRef.current; if (!el) return;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) return;
     const first = sizeRef.current.w === 0;
     sizeRef.current = { w: r.width, h: r.height };
-    if (first) { viewRef.current.panX = r.width / 2; viewRef.current.panY = r.height / 2; }
+    if (first) {
+      const v = viewRef.current;
+      const fit = fitAreaRef.current;
+      if (fit) {
+        v.cell = E.fitCell(fit, r.width, r.height, v.cell);
+        centerViewOn(fit);
+      } else {
+        v.panX = r.width / 2; v.panY = r.height / 2;
+      }
+    }
     redraw(); setViewTick((t) => t + 1);
-  }, [redraw]);
+  }, [redraw, centerViewOn]);
 
   useLayoutEffect(() => {
     const el = wrapRef.current; if (!el) return;
@@ -169,16 +192,6 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     v.panX = w / 2; v.panY = h / 2;
     redraw(); setViewTick((t) => t + 1);
   }, [redraw]);
-
-  // Center the view on a world-cell rect at the current zoom.
-  const centerViewOn = useCallback((rect: Area) => {
-    const v = viewRef.current; const { w, h } = sizeRef.current;
-    if (!w || !h) return;
-    const cx = (rect.x0 + rect.x1 + 1) / 2;
-    const cy = (rect.y0 + rect.y1 + 1) / 2;
-    v.panX = w / 2 - cx * v.cell;
-    v.panY = h / 2 - cy * v.cell;
-  }, []);
 
   // Recenter: frame the working area, or origin if none.
   const recenter = useCallback(() => {

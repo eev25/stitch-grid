@@ -7,6 +7,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildSequence,
   computeWorkingArea,
+  fitCell,
   unionWithCells,
   contrastInk,
   isLight,
@@ -147,6 +148,23 @@ describe("computeWorkingArea", () => {
   it("computes the bounding box of painted cells", () => {
     const cells = { "0,0": "#111", "2,3": "#222", "-1,1": "#333" };
     expect(computeWorkingArea(cells)).toEqual({ x0: -1, y0: 0, x1: 2, y1: 3 });
+  });
+});
+
+describe("fitCell", () => {
+  const area = { x0: -6, y0: -8, x1: 6, y1: 7 }; // 13x16 -> 15x18 with margin
+
+  it("keeps the max cell size when the area already fits", () => {
+    expect(fitCell(area, 1000, 800, 30)).toBe(30);
+  });
+
+  it("zooms out to the tighter axis, in whole pixels", () => {
+    expect(fitCell(area, 375, 800, 30)).toBe(25); // 375 / 15 = 25
+    expect(fitCell(area, 1000, 400, 30)).toBe(22); // 400 / 18 = 22.2
+  });
+
+  it("never goes below the 8px zoom floor", () => {
+    expect(fitCell(area, 50, 50, 30)).toBe(8);
   });
 });
 

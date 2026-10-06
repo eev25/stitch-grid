@@ -17,7 +17,7 @@ import styles from "./App.module.css";
 
 export function App() {
   const {
-    name, setName, bg, palette, activeId, setActiveId,
+    seeded, name, setName, bg, palette, activeId, setActiveId,
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, editor, setEditor, dialog, setDialog,
     seq, activeColor, canBegin, canUndo, canRedo, editingSwatch,
@@ -29,7 +29,7 @@ export function App() {
 
   const canvas = useDesignCanvas({
     cells, setCells, bg, area, setArea, activeColor, tool, topView,
-    pushHistory, commitCells,
+    pushHistory, commitCells, fitOnLoad: seeded,
   });
 
   // Reset state, then recenter the design view (ported from main.jsx's

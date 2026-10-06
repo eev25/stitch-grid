@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import * as E from "../engine/engine";
 import { swapWithBackground } from "../engine/palette";
+import { DEFAULT_YARNS, sampleCells } from "../engine/sample";
 import type {
   Area, Cells, DialogState, EditorState, HistoryState,
   PersistedState, Stitch, Swatch, Tool, TopView, WorldPoint,
@@ -18,36 +19,9 @@ const uid = (): string => "c" + _uid++;
 
 // ---------- defaults ----------
 function defaultPalette(): Swatch[] {
-  return [
-    { id: uid(), color: "#c8553d", label: "Terracotta" },
-    { id: uid(), color: "#2e2b29", label: "Charcoal" },
-    { id: uid(), color: "#3e5c76", label: "Denim" },
-    { id: uid(), color: "#e0a526", label: "Mustard" },
-    { id: uid(), color: "#6e8b5b", label: "Sage" },
-    { id: uid(), color: "#a89b8c", label: "Warm Gray" },
-  ];
+  return DEFAULT_YARNS.map((y) => ({ id: uid(), ...y }));
 }
 const defaultBg = (): Swatch => ({ id: "bg", color: "#f4efe3", label: "Cream" });
-
-// sample heart motif (11x9), painted terracotta
-function sampleCells(color: string): Cells {
-  const rows = [
-    [1, 2, 3, 7, 8, 9],
-    [0, 1, 2, 3, 4, 6, 7, 8, 9, 10],
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    [2, 3, 4, 5, 6, 7, 8],
-    [3, 4, 5, 6, 7],
-    [4, 5, 6],
-    [5],
-  ];
-  const cells: Cells = {};
-  rows.forEach((cols, r) => {
-    cols.forEach((c) => { cells[E.key(c - 5, r - 4)] = color; });
-  });
-  return cells;
-}
 
 interface InitState {
   name: string;
@@ -58,11 +32,13 @@ interface InitState {
   area: Area | null;
   stitch: Stitch | null;
   tool: Tool;
+  /** True when this is the seeded sample (first visit, nothing saved). */
+  seeded: boolean;
 }
 
 function freshState(withSample: boolean): InitState {
   const palette = defaultPalette();
-  const cells = withSample ? sampleCells(palette[0].color) : {};
+  const cells = withSample ? sampleCells(palette.map((s) => s.color)) : {};
   return {
     name: "Untitled Pattern",
     bg: defaultBg(),
@@ -72,6 +48,7 @@ function freshState(withSample: boolean): InitState {
     area: withSample ? E.computeWorkingArea(cells) : null,
     stitch: null,
     tool: "pencil",
+    seeded: withSample,
   };
 }
 
@@ -93,6 +70,7 @@ function loadState(): InitState {
           area: area ?? null,
           stitch: s.stitch ?? null,
           tool: s.tool ?? "pencil",
+          seeded: false,
         };
       }
     }
@@ -106,6 +84,8 @@ const sameSel = (a: Area | null, b: Area | null): boolean =>
   !!a && !!b && a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
 
 export interface PatternStore {
+  /** True when this session started from the seeded sample motif. */
+  seeded: boolean;
   name: string;
   setName: Dispatch<SetStateAction<string>>;
   bg: Swatch;
@@ -353,6 +333,7 @@ export function usePatternStore(): PatternStore {
   }, []);
 
   return {
+    seeded: init.seeded,
     name, setName, bg, palette, activeId, setActiveId,
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, setTopView, editor, setEditor, dialog, setDialog,

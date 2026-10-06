@@ -64,7 +64,7 @@ export function DesignTopBar(props: DesignTopBarProps) {
     <header className={styles.topbar}>
       <div className={`${styles.wordmark} ${styles.hideMobile}`}>
         <span className={styles.wordmarkMark}><Icons.Yarn size={24} /></span>
-        <span className={styles.wordmarkText}>Crochet</span>
+        <span className={styles.wordmarkText}>Stitch Grid</span>
       </div>
 
       <div className={styles.nameField} title="Pattern name">

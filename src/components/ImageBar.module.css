@@ -1,0 +1,57 @@
+/* ============================================================
+   ImageBar.module.css — toolbar pinned to the working-area box
+   while an image is attached. Icon + label on desktop,
+   icon-only 40px targets on mobile.
+   ============================================================ */
+
+.bar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  z-index: 6;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  transition: background .12s, color .12s;
+}
+.btn:hover:not(:disabled) { background: var(--paper-2); color: var(--ink); }
+.btn:active:not(:disabled) { background: var(--line-soft); }
+.btn:disabled { color: var(--ink-faint); opacity: .45; cursor: default; }
+.btn svg { flex: 0 0 auto; }
+.btn.on { color: var(--accent); }
+
+.grip { padding: 0 5px; cursor: grab; touch-action: none; }
+.grip:active { cursor: grabbing; }
+
+.divider { width: 1px; align-self: stretch; margin: 4px 2px; background: var(--line); }
+
+.size {
+  padding: 0 8px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .label { display: none; }
+  .btn, .grip { width: 40px; height: 40px; padding: 0; justify-content: center; }
+}

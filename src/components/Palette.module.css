@@ -138,6 +138,9 @@
   flex-direction: column;
   gap: 12px;
 }
+/* Editing from inside a modal dialog (200): stack above it. */
+.popoverBackdrop.overDialog { z-index: 210; }
+.popover.overDialog { z-index: 211; }
 .popoverRow { display: flex; flex-direction: column; gap: 6px; }
 .popoverRow label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.06em;

@@ -72,6 +72,29 @@ export interface HandleDef {
   ey: "min" | "max" | null;
 }
 
+/**
+ * An uploaded image attached to the working area (drawn stretched over it).
+ * The image itself lives in IndexedDB under `blobId`; this is its metadata.
+ */
+export interface AreaImage {
+  blobId: string;
+  /** Pixel size of the stored (downscaled) image. */
+  w: number;
+  h: number;
+  /**
+   * Swatches extracted for this image, each with its color as of Add image
+   * (after any edits in the upload dialog). Pixelate matches cells against
+   * these saved colors, then paints with the swatch's current color, or
+   * clears the cell if the swatch has been deleted.
+   */
+  swatches: ImageSwatch[];
+}
+
+export interface ImageSwatch {
+  id: string;
+  color: string;
+}
+
 /** Full persisted pattern state (localStorage shape). */
 export interface PersistedState {
   bg: Swatch;
@@ -81,6 +104,7 @@ export interface PersistedState {
   area: Area | null;
   stitch: Stitch | null;
   tool: Tool;
+  image?: AreaImage | null;
   _uid: number;
   /** Back-compat: older saves stored a `selection` instead of `area`. */
   selection?: Area | null;

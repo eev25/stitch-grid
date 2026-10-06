@@ -20,15 +20,20 @@ export interface ColorEditorProps {
   isBg: boolean;
   anchorRect: DOMRect;
   onChange: (sw: Swatch) => void;
-  onDelete: (id: string) => void;
-  onSetBackground: (id: string) => void;
+  /** Omit to hide the Delete action. */
+  onDelete?: (id: string) => void;
+  /** Omit to hide "Set as background". */
+  onSetBackground?: (id: string) => void;
   onClose: () => void;
+  /** Stack above modal dialogs (when editing from inside one). */
+  overDialog?: boolean;
 }
 
 interface PopoverPos { left: number; top: number; }
 
 export function ColorEditor(props: ColorEditorProps) {
-  const { swatch, isBg, anchorRect, onChange, onDelete, onSetBackground, onClose } = props;
+  const { swatch, isBg, anchorRect, onChange, onDelete, onSetBackground, onClose, overDialog } = props;
+  const layer = overDialog ? ` ${styles.overDialog}` : "";
   const [hex, setHex] = useState(swatch.color);
   const [label, setLabel] = useState(swatch.label);
   const [hexText, setHexText] = useState(swatch.color);
@@ -60,8 +65,8 @@ export function ColorEditor(props: ColorEditorProps) {
 
   return (
     <>
-      <div className={styles.popoverBackdrop} onMouseDown={onClose} onTouchStart={onClose} />
-      <div className={styles.popover} ref={popRef}
+      <div className={`${styles.popoverBackdrop}${layer}`} onMouseDown={onClose} onTouchStart={onClose} />
+      <div className={`${styles.popover}${layer}`} ref={popRef}
         style={pos ? { left: pos.left, top: pos.top } : { left: -9999, top: 0 }}>
         <div className={styles.popoverRow}>
           <label>Color</label>
@@ -79,7 +84,7 @@ export function ColorEditor(props: ColorEditorProps) {
             onChange={(e) => { setLabel(e.target.value); commit(null, e.target.value); }}
             placeholder="Color name" />
         </div>
-        {!isBg && (
+        {!isBg && onSetBackground && (
           <button className={`${controls.btn} ${controls.btnGhost} ${styles.popoverWide}`} style={{ height: 36 }}
             onClick={() => onSetBackground(swatch.id)}
             title="Swap this color with the background">
@@ -87,11 +92,13 @@ export function ColorEditor(props: ColorEditorProps) {
           </button>
         )}
         <div className={styles.popoverActions}>
-          <button className={styles.linkDanger} disabled={isBg}
-            onClick={() => { if (!isBg) onDelete(swatch.id); }}
-            title={isBg ? "The background can't be deleted" : "Delete swatch"}>
-            <Icons.Trash size={16} /> Delete
-          </button>
+          {onDelete ? (
+            <button className={styles.linkDanger} disabled={isBg}
+              onClick={() => { if (!isBg) onDelete(swatch.id); }}
+              title={isBg ? "The background can't be deleted" : "Delete swatch"}>
+              <Icons.Trash size={16} /> Delete
+            </button>
+          ) : <span />}
           <button className={`${controls.btn} ${controls.btnGhost}`} style={{ height: 36 }} onClick={onClose}>Done</button>
         </div>
       </div>

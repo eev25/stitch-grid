@@ -24,3 +24,16 @@ export function swapWithBackground(bg: Swatch, palette: Swatch[], activeId: stri
     activeId: activeId === id ? bg.id : activeId === bg.id ? id : activeId,
   };
 }
+
+/** Default label for the n-th color extracted from an uploaded image. */
+export const imageColorLabel = (n: number): string => `Image color ${n}`;
+
+/** Next free "Image color N" number: one past the highest already in `palette`. */
+export function nextImageColorNumber(palette: Swatch[]): number {
+  let max = 0;
+  for (const s of palette) {
+    const m = /^Image color (\d+)$/.exec(s.label);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return max + 1;
+}

@@ -195,5 +195,55 @@ export function ChevronUp(p: IconProps) {
   return (<S {...p}><path d="M6 15l6-6 6 6" /></S>);
 }
 
+// Uploaded image
+export function Picture(p: IconProps) {
+  return (
+    <S {...p}>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <circle cx="9" cy="10" r="1.5" />
+      <path d="M4.5 17.5 10 13l3.5 3 2.5-2 3.5 3" />
+    </S>
+  );
+}
+
+export function Grip(p: IconProps) {
+  return (
+    <S {...p} fill="currentColor" stroke="none">
+      <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+      <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+      <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+    </S>
+  );
+}
+
+export function Pixelate(p: IconProps) {
+  return (
+    <S {...p}>
+      <rect x="4" y="4" width="16" height="16" rx="1.5" />
+      <path d="M4 12h16M12 4v16" />
+      <rect x="4" y="4" width="8" height="8" fill="currentColor" stroke="none" />
+      <rect x="12" y="12" width="8" height="8" fill="currentColor" stroke="none" />
+    </S>
+  );
+}
+
+export function Eye(p: IconProps) {
+  return (
+    <S {...p}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </S>
+  );
+}
+
+export function EyeOff(p: IconProps) {
+  return (
+    <S {...p}>
+      <path d="M10 5.7a9 9 0 0 1 2-.2c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.4 3.2M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M4 4l16 16" />
+    </S>
+  );
+}
+
 /** Icon component reference, for props like `icon={Pencil}`. */
 export type IconComponent = (p: IconProps) => ReactNode;

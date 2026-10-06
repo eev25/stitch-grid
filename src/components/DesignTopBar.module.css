@@ -1,7 +1,7 @@
 /* ============================================================
    DesignTopBar.module.css
    Design View top bar: wordmark, segmented
-   control, Begin Stitching button, and mobile
+   control, Upload image and Begin Stitching buttons, and mobile
    visibility helpers.
    ============================================================ */
 
@@ -88,15 +88,15 @@
 .segBtn svg { flex: 0 0 auto; }
 .segText { display: inline; }
 
-/* ---------- Begin Stitching ---------- */
-.beginBtn svg { flex: 0 0 auto; }
+/* ---------- Begin Stitching / Upload image ---------- */
+.beginBtn svg, .uploadBtn svg { flex: 0 0 auto; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
   .hideMobile { display: none !important; }
   /* Begin Stitching collapses to a square icon button. */
-  .beginText { display: none; }
-  .beginBtn { width: 38px; padding: 0; justify-content: center; }
+  .beginText, .uploadText { display: none; }
+  .beginBtn, .uploadBtn { width: 38px; padding: 0; justify-content: center; }
   .topbar { gap: 10px; padding: 9px 12px; }
 }
 

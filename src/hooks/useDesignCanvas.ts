@@ -1,15 +1,17 @@
 /* ============================================================
    useDesignCanvas — Design View canvas surface: sizing, redraw,
    pan/zoom (wheel + two-finger touch), and pointer handling for
-   pencil/eraser/bucket/line/rect tools + working-area resize.
+   pencil/eraser/bucket/line/rect tools + working-area resize,
+   and the attached image (drawn under cells, aspect-locked resize).
    ============================================================ */
 import {
   useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState,
   type Dispatch, type RefObject, type SetStateAction,
 } from "react";
 import * as E from "../engine/engine";
+import { IMAGE_OPACITY, resizeAreaLocked, type ScreenBox } from "../engine/image";
 import { isTouchEvent, localPt, pinchDist, type CanvasPointerEvent } from "./canvasPointer";
-import type { Area, Cells, HandleDef, Swatch, Tool, TopView, View, WorldPoint } from "../types";
+import type { Area, AreaImage, Cells, HandleDef, Swatch, Tool, TopView, View, WorldPoint } from "../types";
 
 export type { CanvasPointerEvent } from "./canvasPointer";
 
@@ -32,6 +34,12 @@ interface UseDesignCanvasOptions {
   commitCells: (prevCells: Cells, nextCells: Cells) => void;
   /** Zoom out (never in) on first layout so the initial working area fits. */
   fitOnLoad?: boolean;
+  /** Attached image: suspends auto-grow and locks the area's aspect ratio. */
+  image: AreaImage | null;
+  /** Decoded image to draw (may lag `image` while loading from storage). */
+  imageSource: HTMLCanvasElement | null;
+  /** Draw the cells inside the working area as background. */
+  imageHidden: boolean;
 }
 
 export interface DesignCanvasApi {
@@ -41,7 +49,17 @@ export interface DesignCanvasApi {
   onPointerUp: () => void;
   home: () => void;
   recenter: () => void;
+  /** Frame a world rect: zoom to fit (leaving room for the image bar) and center it. */
+  frameArea: (rect: Area) => void;
+  /** World point (fractional cells) at the center of the viewport. */
+  viewportCenter: () => { x: number; y: number };
   dimBadge: DimBadge | null;
+  /** Working-area box in canvas-local CSS px. */
+  areaBox: ScreenBox | null;
+  /** Canvas size in CSS px. */
+  viewport: { w: number; h: number };
+  /** Current cell size in CSS px. */
+  cell: number;
   resizing: boolean;
   isTouch: boolean;
 }
@@ -63,7 +81,10 @@ function paintAt(map: Cells, x: number, y: number, erase: boolean, color: string
 }
 
 export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
-  const { cells, setCells, bg, area, setArea, activeColor, tool, topView, pushHistory, commitCells, fitOnLoad } = opts;
+  const {
+    cells, setCells, bg, area, setArea, activeColor, tool, topView, pushHistory, commitCells, fitOnLoad,
+    image, imageSource, imageHidden,
+  } = opts;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 30 });
@@ -84,8 +105,12 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     const { w, h } = sizeRef.current;
     if (!w || !h) return;
     const ctx = E.setupCanvas(cv, w, h);
-    E.drawDesign(ctx, { w, h, view: viewRef.current, cells, bg: bg.color, area });
-  }, [cells, bg.color, area]);
+    E.drawDesign(ctx, {
+      w, h, view: viewRef.current, cells, bg: bg.color, area,
+      image: image ? imageSource : null, imageOpacity: IMAGE_OPACITY,
+      hideAreaCells: !!image && imageHidden,
+    });
+  }, [cells, bg.color, area, image, imageSource, imageHidden]);
 
   // Center the view on a world-cell rect at the current zoom.
   const centerViewOn = useCallback((rect: Area) => {
@@ -192,6 +217,28 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     redraw(); setViewTick((t) => t + 1);
   }, [area, centerViewOn, redraw]);
 
+  // Room kept above and below a framed area so the image bar fits beside it.
+  const FRAME_PAD_Y = 56;
+  const frameArea = useCallback((rect: Area) => {
+    const v = viewRef.current; const { w, h } = sizeRef.current;
+    if (!w || !h) return;
+    v.cell = E.fitCell(rect, w, Math.max(h - FRAME_PAD_Y * 2, 1), 72);
+    centerViewOn(rect);
+    redraw(); setViewTick((t) => t + 1);
+  }, [centerViewOn, redraw]);
+
+  const viewportCenter = useCallback(() => {
+    const v = viewRef.current; const { w, h } = sizeRef.current;
+    return { x: (w / 2 - v.panX) / v.cell, y: (h / 2 - v.panY) / v.cell };
+  }, []);
+
+  // Auto-grow the working area to include painted cells, except while an
+  // image is attached (painting outside it is allowed; the box stays put).
+  const grow = useCallback((keys: string[]) => {
+    if (image || !keys.length) return;
+    setArea((a) => E.unionWithCells(a, keys));
+  }, [image, setArea]);
+
   // ---------- working-area handle hit testing ----------
   const hitHandle = useCallback((rect: Area, p: { x: number; y: number }) => {
     return E.hitAreaHandle(rect, p.x, p.y, viewRef.current, 13);
@@ -238,14 +285,13 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
         const prev = cells; const next = { ...cells };
         paintAt(next, c.x, c.y, false, activeColor);
         commitCells(prev, next);
-        setArea((a) => E.unionWithCells(a, [E.key(c.x, c.y)]));
+        grow([E.key(c.x, c.y)]);
         return;
       }
       const next = E.floodFill(cells, c.x, c.y, activeColor, bg.color, area);
       if (next) {
         commitCells(cells, next);
-        const touched = Object.keys(next).filter((k) => next[k] !== cells[k]);
-        setArea((a) => E.unionWithCells(a, touched));
+        grow(Object.keys(next).filter((k) => next[k] !== cells[k]));
       }
       return;
     }
@@ -264,7 +310,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     if (!erase) touched.push(E.key(c.x, c.y));
     drag.current = { type: "paint", erase, last: c, prev: cells, map, touched };
     setCells(map);
-  }, [area, activeColor, bg.color, cells, commitCells, hitHandle, setArea, setCells, tool]);
+  }, [area, activeColor, bg.color, cells, commitCells, grow, hitHandle, setArea, setCells, tool]);
 
   const onPointerMove = useCallback((e: CanvasPointerEvent) => {
     const d = drag.current; if (!d) return;
@@ -321,6 +367,10 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
       const v = viewRef.current;
       const cx = Math.floor((p.x - v.panX) / v.cell);
       const cy = Math.floor((p.y - v.panY) / v.cell);
+      if (image) {
+        setArea(resizeAreaLocked(d.rect, d.handle, cx, cy, image.w / image.h));
+        return;
+      }
       const s = { ...d.rect };
       if (d.handle.ex === "min") s.x0 = Math.min(cx, d.rect.x1);
       if (d.handle.ex === "max") s.x1 = Math.max(cx, d.rect.x0);
@@ -329,7 +379,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
       setArea(s);
       return;
     }
-  }, [activeColor, redraw, setArea, setCells]);
+  }, [activeColor, image, redraw, setArea, setCells]);
 
   const onPointerUp = useCallback(() => {
     const d = drag.current; drag.current = null;
@@ -340,39 +390,42 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
       const changed = JSON.stringify(d.prev) !== JSON.stringify(d.map);
       if (changed) {
         pushHistory(d.prev);
-        const touched = Object.keys(d.map).filter((k) => d.map[k] !== d.prev[k]);
-        if (touched.length) setArea((a) => E.unionWithCells(a, touched));
+        grow(Object.keys(d.map).filter((k) => d.map[k] !== d.prev[k]));
       }
     }
     if (d.type === "paint") {
       const changed = JSON.stringify(d.prev) !== JSON.stringify(d.map);
       if (changed) {
         pushHistory(d.prev);
-        // auto-grow the working area to include newly painted cells
-        if (d.touched.length) setArea((a) => E.unionWithCells(a, d.touched));
+        grow(d.touched);
       }
     }
-  }, [pushHistory, setArea]);
+  }, [pushHistory, grow]);
 
   // ---------- overlay geometry ----------
   // dimension readout sits on the working-area box (shown while resizing).
   // Depends on viewTick too: a pan/zoom can move the badge's screen position
   // even when `area` itself hasn't changed.
-  const dimBadge = useMemo<DimBadge | null>(() => {
+  const areaBox = useMemo<ScreenBox | null>(() => {
     if (!area) return null;
     const v = viewRef.current;
     const a = E.worldToScreen(area.x0, area.y0, v);
     const b = E.worldToScreen(area.x1 + 1, area.y1 + 1, v);
-    const cx = (a.sx + b.sx) / 2;
+    return { left: a.sx, top: a.sy, right: b.sx, bottom: b.sy };
+  }, [area, viewTick]);
+
+  const dimBadge = useMemo<DimBadge | null>(() => {
+    if (!area || !areaBox) return null;
     const w = area.x1 - area.x0 + 1;
     const h = area.y1 - area.y0 + 1;
-    return { left: cx, top: a.sy - 16, text: `${w} × ${h} stitches` };
-  }, [area, viewTick]);
+    return { left: (areaBox.left + areaBox.right) / 2, top: areaBox.top - 16, text: `${w} × ${h} stitches` };
+  }, [area, areaBox]);
 
   return {
     canvasRef,
     onPointerDown, onPointerMove, onPointerUp,
-    home, recenter,
-    dimBadge, resizing, isTouch,
+    home, recenter, frameArea, viewportCenter,
+    dimBadge, areaBox, viewport: { ...sizeRef.current }, cell: viewRef.current.cell,
+    resizing, isTouch,
   };
 }

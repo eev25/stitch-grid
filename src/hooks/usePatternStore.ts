@@ -1,14 +1,18 @@
 /* ============================================================
    usePatternStore — root pattern state, history, persistence,
-   palette ops, and stitching-session ops.
+   palette ops, stitching-session ops, and the uploaded image
+   attached to the working area.
    View/canvas/pointer handling lives in useDesignCanvas instead.
    ============================================================ */
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import * as E from "../engine/engine";
 import { swapWithBackground } from "../engine/palette";
 import { DEFAULT_YARNS, sampleCells } from "../engine/sample";
+import { pixelateCells, pixelateTargets } from "../engine/image";
+import { decodeImage, readPixels } from "../lib/imageFile";
+import { deleteImageBlob, getImageBlob, pruneImageBlobs } from "../lib/imageStore";
 import type {
-  Area, Cells, DialogState, EditorState, HistoryState,
+  Area, AreaImage, Cells, DialogState, EditorState, HistoryState,
   PersistedState, Stitch, Swatch, Tool, TopView, WorldPoint,
 } from "../types";
 
@@ -30,6 +34,7 @@ interface InitState {
   area: Area | null;
   stitch: Stitch | null;
   tool: Tool;
+  image: AreaImage | null;
   /** True when this is the seeded sample (first visit, nothing saved). */
   seeded: boolean;
 }
@@ -45,6 +50,7 @@ function freshState(withSample: boolean): InitState {
     area: withSample ? E.computeWorkingArea(cells) : null,
     stitch: null,
     tool: "pencil",
+    image: null,
     seeded: withSample,
   };
 }
@@ -66,6 +72,8 @@ function loadState(): InitState {
           area: area ?? null,
           stitch: s.stitch ?? null,
           tool: s.tool ?? "pencil",
+          // (an image saved before swatch colors were stored is dropped)
+          image: s.image?.swatches ? s.image : null,
           seeded: false,
         };
       }
@@ -78,6 +86,19 @@ function loadState(): InitState {
 
 const sameSel = (a: Area | null, b: Area | null): boolean =>
   !!a && !!b && a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
+
+/** What the upload dialog hands over when the user adds an image. */
+export interface ImageUpload {
+  blobId: string;
+  /** The downscaled image (also what's drawn on the canvas). */
+  source: HTMLCanvasElement;
+  /** Extracted colors to append (or, with `clear`, to become the palette). */
+  colors: Array<{ color: string; label: string }>;
+  /** Also clear cells, palette, stitching session, and undo history. */
+  clear: boolean;
+  /** Working area the image is attached to. */
+  area: Area;
+}
 
 export interface PatternStore {
   /** True when this session started from the seeded sample motif. */
@@ -99,6 +120,16 @@ export interface PatternStore {
   setEditor: Dispatch<SetStateAction<EditorState | null>>;
   dialog: DialogState | null;
   setDialog: Dispatch<SetStateAction<DialogState | null>>;
+
+  /** Image attached to the working area (null = vanilla area or no area). */
+  image: AreaImage | null;
+  /** Decoded image for drawing/pixelating; null until loaded from storage. */
+  imageSource: HTMLCanvasElement | null;
+  /** Cells inside the area are temporarily drawn as background. */
+  imageHidden: boolean;
+  setImageHidden: Dispatch<SetStateAction<boolean>>;
+  /** Pixelate is possible: the image is loaded and some of its swatches still exist. */
+  canPixelate: boolean;
 
   seq: WorldPoint[];
   activeColor: string;
@@ -126,6 +157,10 @@ export interface PatternStore {
   stitchUndo: () => void;
 
   doNewPattern: () => void;
+
+  attachImage: (upload: ImageUpload) => void;
+  removeImage: () => void;
+  pixelate: () => void;
 }
 
 export function usePatternStore(): PatternStore {
@@ -142,6 +177,9 @@ export function usePatternStore(): PatternStore {
   const [history, setHistory] = useState<HistoryState>({ past: [], future: [] });
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [dialog, setDialog] = useState<DialogState | null>(null);
+  const [image, setImage] = useState<AreaImage | null>(init.image);
+  const [imageSource, setImageSource] = useState<HTMLCanvasElement | null>(null);
+  const [imageHidden, setImageHidden] = useState(false);
 
   // latest-value refs so undo/redo/exit can stay referentially stable
   const cellsRef = useRef(cells);
@@ -150,6 +188,8 @@ export function usePatternStore(): PatternStore {
   historyRef.current = history;
   const stitchRef = useRef(stitch);
   stitchRef.current = stitch;
+  const imageRef = useRef(image);
+  imageRef.current = image;
 
   const seq = useMemo(() => (stitch ? E.buildSequence(stitch.sel) : []), [stitch]);
 
@@ -163,14 +203,32 @@ export function usePatternStore(): PatternStore {
   useEffect(() => {
     const t = setTimeout(() => {
       try {
-        const payload: PersistedState = { bg, palette, activeId, cells, area, stitch, tool, _uid };
+        const payload: PersistedState = { bg, palette, activeId, cells, area, stitch, tool, image, _uid };
         localStorage.setItem(STORE_KEY, JSON.stringify(payload));
       } catch {
         // ignore quota / serialization errors
       }
     }, 250);
     return () => clearTimeout(t);
-  }, [bg, palette, activeId, cells, area, stitch, tool]);
+  }, [bg, palette, activeId, cells, area, stitch, tool, image]);
+
+  // Load the saved image from IndexedDB. If its blob is gone, fall back to a
+  // vanilla area at the same footprint. Then drop any orphaned blobs.
+  useEffect(() => {
+    let alive = true;
+    const saved = init.image;
+    (async () => {
+      if (saved) {
+        const blob = await getImageBlob(saved.blobId);
+        const source = blob ? await decodeImage(blob).catch(() => null) : null;
+        if (!alive || imageRef.current?.blobId !== saved.blobId) return;
+        if (source) setImageSource(source);
+        else setImage(null);
+      }
+      if (alive) void pruneImageBlobs([imageRef.current?.blobId]);
+    })();
+    return () => { alive = false; };
+  }, [init]);
 
   // ---------- history ----------
   const pushHistory = useCallback((prevCells: Cells) => {
@@ -315,6 +373,49 @@ export function usePatternStore(): PatternStore {
     setStitch((s) => (s && s.pointer > 0 ? { ...s, pointer: s.pointer - 1 } : s));
   }, []);
 
+  // ---------- uploaded image ----------
+  const detachImage = useCallback(() => {
+    const prev = imageRef.current;
+    setImage(null); setImageSource(null); setImageHidden(false);
+    if (prev) void deleteImageBlob(prev.blobId);
+  }, []);
+
+  // Attach a new image (replacing any previous one) as the working area.
+  // Extracted colors are always appended as new swatches, never merged.
+  const attachImage = useCallback((u: ImageUpload) => {
+    const prev = imageRef.current;
+    const swatches: Swatch[] = u.colors.map((c) => ({ id: uid(), ...c }));
+    if (u.clear) {
+      setCells({}); setPalette(swatches); setStitch(null);
+      setHistory({ past: [], future: [] });
+    } else {
+      setPalette((p) => [...p, ...swatches]);
+    }
+    setActiveId(swatches[0]?.id ?? "bg");
+    setArea({ ...u.area });
+    setImage({
+      blobId: u.blobId, w: u.source.width, h: u.source.height,
+      swatches: swatches.map(({ id, color }) => ({ id, color })),
+    });
+    setImageSource(u.source);
+    setImageHidden(false);
+    setEditor(null);
+    if (prev && prev.blobId !== u.blobId) void deleteImageBlob(prev.blobId);
+  }, []);
+
+  // The area stays where it is as a vanilla area (auto-grow resumes).
+  const removeImage = detachImage;
+
+  const targets = useMemo(() => (image ? pixelateTargets(image.swatches, palette) : []), [image, palette]);
+  const canPixelate = !!imageSource && targets.some((t) => t.paint);
+
+  // Repaint every cell in the area from the image, as one undo step.
+  const pixelate = useCallback(() => {
+    if (!canPixelate || !imageSource || !area) return;
+    commitCells(cells, pixelateCells(cells, readPixels(imageSource), area, targets));
+    setImageHidden(false);
+  }, [canPixelate, imageSource, area, targets, cells, commitCells]);
+
   // ---------- new pattern ----------
   const doNewPattern = useCallback(() => {
     const f = freshState(false);
@@ -323,17 +424,20 @@ export function usePatternStore(): PatternStore {
     setTool("pencil");
     setHistory({ past: [], future: [] });
     setDialog(null);
-  }, []);
+    detachImage();
+  }, [detachImage]);
 
   return {
     seeded: init.seeded,
     bg, palette, activeId, setActiveId,
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, setTopView, editor, setEditor, dialog, setDialog,
+    image, imageSource, imageHidden, setImageHidden, canPixelate,
     seq, activeColor, canBegin: !!area, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
     updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder, pickColorAt,
     beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo,
     doNewPattern,
+    attachImage, removeImage, pixelate,
   };
 }

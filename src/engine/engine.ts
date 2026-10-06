@@ -108,10 +108,15 @@ export interface DrawDesignOptions {
   cells: Cells;
   bg: string;
   area: Area | null;
+  /** Uploaded image, drawn faintly over the working area beneath the cells. */
+  image?: CanvasImageSource | null;
+  imageOpacity?: number;
+  /** Leave the cells inside the working area unpainted (background shows through). */
+  hideAreaCells?: boolean;
 }
 
 export function drawDesign(ctx: CanvasRenderingContext2D, o: DrawDesignOptions): void {
-  const { w, h, view, cells, bg, area } = o;
+  const { w, h, view, cells, bg, area, image, imageOpacity = 1, hideAreaCells } = o;
   const v = view;
   ctx.clearRect(0, 0, w, h);
 
@@ -125,10 +130,23 @@ export function drawDesign(ctx: CanvasRenderingContext2D, o: DrawDesignOptions):
   const c0y = Math.floor((0 - v.panY) / v.cell);
   const c1y = Math.ceil((h - v.panY) / v.cell);
 
+  // attached image, stretched over the working area
+  if (image && area) {
+    const a = worldToScreen(area.x0, area.y0, v);
+    const b = worldToScreen(area.x1 + 1, area.y1 + 1, v);
+    ctx.save();
+    ctx.globalAlpha = imageOpacity;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(image, a.sx, a.sy, b.sx - a.sx, b.sy - a.sy);
+    ctx.restore();
+  }
+
   // painted cells
+  const hidden = hideAreaCells ? area : null;
   for (const k in cells) {
     const { x, y } = parseKey(k);
     if (x < c0x || x > c1x || y < c0y || y > c1y) continue;
+    if (hidden && x >= hidden.x0 && x <= hidden.x1 && y >= hidden.y0 && y <= hidden.y1) continue;
     const { sx, sy } = worldToScreen(x, y, v);
     ctx.fillStyle = cells[k];
     ctx.fillRect(sx, sy, v.cell + 0.6, v.cell + 0.6);

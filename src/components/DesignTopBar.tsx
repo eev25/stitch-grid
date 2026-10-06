@@ -1,9 +1,10 @@
 /* ============================================================
    DesignTopBar — Design View top bar.
    ============================================================ */
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import * as Icons from "../icons/icons";
 import type { IconComponent } from "../icons/icons";
+import { ACCEPTED_IMAGE_TYPES } from "../lib/imageFile";
 import type { Tool } from "../types";
 import controls from "../styles/controls.module.css";
 import styles from "./DesignTopBar.module.css";
@@ -30,13 +31,15 @@ export interface DesignTopBarProps {
   canBegin: boolean;
   onBegin: () => void;
   onNewPattern: () => void;
+  onUploadImage: (file: File) => void;
 }
 
 export function DesignTopBar(props: DesignTopBarProps) {
   const {
     tool, setTool,
-    canBegin, onBegin, onNewPattern,
+    canBegin, onBegin, onNewPattern, onUploadImage,
   } = props;
+  const fileRef = useRef<HTMLInputElement>(null);
 
   return (
     <header className={styles.topbar}>
@@ -55,6 +58,29 @@ export function DesignTopBar(props: DesignTopBarProps) {
       </div>
 
       <div className={styles.topbarSpacer} />
+
+      {/* Upload an image to trace / pixelate */}
+      <button
+        className={`${controls.btn} ${controls.btnGhost} ${styles.uploadBtn}`}
+        onClick={() => fileRef.current?.click()}
+        title="Upload image"
+        aria-label="Upload image"
+      >
+        <Icons.Picture size={18} />
+        <span className={styles.uploadText}>Upload image</span>
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept={ACCEPTED_IMAGE_TYPES.join(",")}
+        hidden
+        data-testid="image-upload-input"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = ""; // let the same file be picked again
+          if (file) onUploadImage(file);
+        }}
+      />
 
       {/* Begin stitching */}
       <button

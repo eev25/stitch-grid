@@ -1,9 +1,14 @@
 /* ============================================================
    App — root component: wires the pattern store, the design
    canvas surface, and all top-level UI (topbar, palette, canvas
-   overlays, mobile palette, color editor, dialogs, Stitching Mode).
+   overlays, image bar, mobile palette, color editor, dialogs,
+   Stitching Mode).
    ============================================================ */
+import { useState } from "react";
 import * as Icons from "./icons/icons";
+import { areaCenteredAt, imageAreaSize } from "./engine/image";
+import { encodeImage } from "./lib/imageFile";
+import { newImageId, putImageBlob } from "./lib/imageStore";
 import { usePatternStore } from "./hooks/usePatternStore";
 import { useDesignCanvas } from "./hooks/useDesignCanvas";
 import { DesignTopBar } from "./components/DesignTopBar";
@@ -12,6 +17,8 @@ import { MobilePalette } from "./components/MobilePalette";
 import { ColorEditor } from "./components/ColorEditor";
 import { StitchingView } from "./components/StitchingView";
 import { Dialog } from "./components/Dialog";
+import { ImageBar } from "./components/ImageBar";
+import { UploadDialog, type UploadResult } from "./components/UploadDialog";
 import styles from "./App.module.css";
 
 export function App() {
@@ -24,12 +31,34 @@ export function App() {
     updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder,
     beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo,
     doNewPattern,
+    image, imageSource, imageHidden, setImageHidden, canPixelate,
+    attachImage, removeImage, pixelate,
   } = usePatternStore();
 
   const canvas = useDesignCanvas({
     cells, setCells, bg, area, setArea, activeColor, tool, topView,
     pushHistory, commitCells, fitOnLoad: seeded,
+    image, imageSource, imageHidden,
   });
+
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const hasCells = Object.keys(cells).length > 0;
+
+  // Store the downscaled image in IndexedDB, then make it the working area:
+  // 40 stitches wide, centered on the viewport, and framed. (If storage
+  // fails the image still works this session; on reload the area falls
+  // back to a vanilla one.)
+  async function handleAddImage(r: UploadResult) {
+    const blobId = newImageId();
+    const blob = await encodeImage(r.source).catch(() => null);
+    if (blob) await putImageBlob(blobId, blob);
+    const { w, h } = imageAreaSize(r.source.width / r.source.height);
+    const c = canvas.viewportCenter();
+    const rect = areaCenteredAt(c.x, c.y, w, h);
+    attachImage({ blobId, source: r.source, colors: r.colors, clear: r.clear, area: rect });
+    canvas.frameArea(rect);
+    setUploadFile(null);
+  }
 
   // Reset state, then recenter the design view (store and canvas live in
   // separate hooks, so the two steps are called here).
@@ -51,7 +80,8 @@ export function App() {
       <DesignTopBar
         tool={tool} setTool={setTool}
         canBegin={canBegin} onBegin={beginStitching}
-        onNewPattern={() => setDialog({ type: "new" })} />
+        onNewPattern={() => setDialog({ type: "new" })}
+        onUploadImage={setUploadFile} />
 
       <div className={styles.workspace}>
         <PaletteSidebar palette={palette} bg={bg} activeId={activeId}
@@ -65,16 +95,24 @@ export function App() {
             onMouseUp={canvas.onPointerUp} onMouseLeave={canvas.onPointerUp}
             onTouchStart={canvas.onPointerDown} onTouchMove={canvas.onPointerMove} onTouchEnd={canvas.onPointerUp} />
 
-          {Object.keys(cells).length === 0 && (
+          {!hasCells && !image && (
             <div className={styles.canvasHint}>
               <Icons.Pencil size={15} /> Pick a color, then paint your first stitch
             </div>
           )}
 
-          {canvas.dimBadge && canvas.resizing && (
+          {/* The image bar shows W x H itself, so skip the badge while it's up. */}
+          {canvas.dimBadge && canvas.resizing && !image && (
             <div className={styles.dimBadge} style={{ left: canvas.dimBadge.left, top: canvas.dimBadge.top }}>
               {canvas.dimBadge.text}
             </div>
+          )}
+
+          {image && area && canvas.areaBox && (
+            <ImageBar area={area} box={canvas.areaBox} viewport={canvas.viewport} cell={canvas.cell}
+              hidden={imageHidden} canPixelate={canPixelate}
+              onMoveArea={setArea} onPixelate={pixelate}
+              onToggleHidden={() => setImageHidden((h) => !h)} onRemove={removeImage} />
           )}
 
           <div className={`${styles.canvasOverlay}${canvas.isTouch ? ` ${styles.touch}` : ""}`}>
@@ -98,6 +136,12 @@ export function App() {
       {dialog && (
         <Dialog dialog={dialog} onCancel={() => setDialog(null)}
           onNewPattern={handleNewPattern} onNewSession={confirmNewSession} />
+      )}
+
+      {uploadFile && (
+        <UploadDialog file={uploadFile} palette={palette}
+          canClear={hasCells} hasStitchProgress={!!stitch && stitch.pointer > 0}
+          onCancel={() => setUploadFile(null)} onAdd={handleAddImage} />
       )}
     </div>
   );

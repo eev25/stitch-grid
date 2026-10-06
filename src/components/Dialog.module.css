@@ -37,3 +37,10 @@
 .dialog p { margin: 0 0 20px; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
 
 .dialogActions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* Wider dialog with scrolling content (upload dialog). */
+.dialog.wide {
+  max-width: 440px;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+}

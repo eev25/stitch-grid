@@ -1,0 +1,81 @@
+/* ============================================================
+   UploadDialog.module.css
+   Image preview, color-count stepper, extracted color list,
+   and the "Clear existing work" option.
+   ============================================================ */
+
+.preview {
+  height: 180px;
+  margin-bottom: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  /* checkerboard so transparent areas read as transparent */
+  background: repeating-conic-gradient(var(--paper-2) 0% 25%, var(--panel) 0% 50%) 50% / 16px 16px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.preview img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+
+.sectionLabel {
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.countRow {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.stepper {
+  display: inline-flex; align-items: center; gap: 2px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 2px;
+}
+.stepper button { width: 34px; height: 34px; font-size: 18px; font-weight: 600; }
+.count {
+  min-width: 30px; text-align: center;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.colorList {
+  list-style: none; margin: 0 0 14px; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.colorRow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 6px; border-radius: var(--radius-sm);
+}
+.colorRow:hover { background: var(--paper-2); }
+.colorRow input[type=checkbox], .clearRow input[type=checkbox] {
+  width: 18px; height: 18px; margin: 0; flex: 0 0 auto;
+  accent-color: var(--accent);
+}
+.chip {
+  width: 30px; height: 30px; border-radius: 8px; flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.10), var(--shadow-sm);
+}
+.chip:hover { box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.10), 0 0 0 2px var(--accent-tint-2); }
+.colorLabel {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 13.5px; font-weight: 600; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hex {
+  font-size: 12px; font-weight: 600; color: var(--ink-faint);
+  text-transform: uppercase; font-variant-numeric: tabular-nums;
+}
+.unchecked .chip { opacity: .4; }
+.unchecked .colorLabel { color: var(--ink-faint); font-weight: 500; }
+
+.clearRow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 6px 4px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  cursor: pointer;
+}
+
+.note, .error { margin: 4px 0 14px; font-size: 13px; line-height: 1.45; }
+.note { color: var(--ink-soft); }
+.note.warn, .error { color: var(--danger); font-weight: 600; }

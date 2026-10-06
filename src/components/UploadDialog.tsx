@@ -185,11 +185,11 @@ export function UploadDialog(props: UploadDialogProps) {
 
             <label className={styles.clearRow}>
               <input type="checkbox" checked={clear} onChange={(e) => setClear(e.target.checked)} />
-              <span>Clear existing work</span>
+              <span>Start from new</span>
             </label>
             {clear && (
               <div className={styles.note} role="alert">
-                Erases your cells, palette, and any stitching progress. 
+                Erases your pattern, palette, and any stitching progress. 
               </div>
             )}
           </>

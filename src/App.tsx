@@ -59,7 +59,7 @@ export function App() {
           onEdit={(id, rect) => { setActiveId(id); setEditor({ id, rect }); }}
           onAdd={addSwatch} onReorder={reorder} />
 
-        <div className={styles.canvasWrap} ref={canvas.wrapRef}>
+        <div className={styles.canvasWrap}>
           <canvas ref={canvas.canvasRef} className={`${styles.canvasEl} ${styles.modePaint}`}
             onMouseDown={canvas.onPointerDown} onMouseMove={canvas.onPointerMove}
             onMouseUp={canvas.onPointerUp} onMouseLeave={canvas.onPointerUp}

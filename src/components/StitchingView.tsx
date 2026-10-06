@@ -31,7 +31,6 @@ type StitchDragState =
 export function StitchingView(props: StitchingViewProps) {
   const { sel, seq, pointer, cells, bg, onNext, onUndo, onExit } = props;
 
-  const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 34 });
   const sizeRef = useRef({ w: 0, h: 0 });
@@ -77,8 +76,10 @@ export function StitchingView(props: StitchingViewProps) {
   }, [seq, centerOn]);
 
   // size tracking
+  // Measure the canvas (not its wrapper) so sizing shares one box with
+  // pointer mapping, which reads the canvas rect.
   const measure = useCallback(() => {
-    const el = wrapRef.current; if (!el) return;
+    const el = canvasRef.current; if (!el) return;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) return;
     const first = sizeRef.current.w === 0;
@@ -92,7 +93,7 @@ export function StitchingView(props: StitchingViewProps) {
   // `redraw()` effect below — re-running this on every pointer/cell change
   // would needlessly tear down and recreate the ResizeObserver each click.
   useLayoutEffect(() => {
-    const el = wrapRef.current; if (!el) return;
+    const el = canvasRef.current; if (!el) return;
     measure();
     const raf1 = requestAnimationFrame(measure);
     const raf2 = requestAnimationFrame(() => requestAnimationFrame(measure));
@@ -220,7 +221,7 @@ export function StitchingView(props: StitchingViewProps) {
         )}
       </header>
 
-      <div className={styles.stitchCanvasWrap} ref={wrapRef}>
+      <div className={styles.stitchCanvasWrap}>
         <canvas ref={canvasRef} className={styles.canvasEl}
           onMouseDown={onPointerDown} onMouseMove={onPointerMove}
           onMouseUp={onPointerUp} onMouseLeave={onPointerUp}

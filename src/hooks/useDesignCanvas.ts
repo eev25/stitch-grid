@@ -35,7 +35,6 @@ interface UseDesignCanvasOptions {
 }
 
 export interface DesignCanvasApi {
-  wrapRef: RefObject<HTMLDivElement | null>;
   canvasRef: RefObject<HTMLCanvasElement | null>;
   onPointerDown: (e: CanvasPointerEvent) => void;
   onPointerMove: (e: CanvasPointerEvent) => void;
@@ -66,7 +65,6 @@ function paintAt(map: Cells, x: number, y: number, erase: boolean, color: string
 export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
   const { cells, setCells, bg, area, setArea, activeColor, tool, topView, pushHistory, commitCells, fitOnLoad } = opts;
 
-  const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 30 });
   const sizeRef = useRef({ w: 0, h: 0 });
@@ -99,8 +97,12 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
     v.panY = h / 2 - cy * v.cell;
   }, []);
 
+  // Measure the canvas itself, not its wrapper: pointer mapping reads the
+  // canvas rect too, so sizing and hit-testing must share one box. (The
+  // wrapper can be larger, e.g. its mobile padding-bottom.) Safe from resize
+  // feedback because the canvas's CSS size is fixed at 100% x 100%.
   const measure = useCallback(() => {
-    const el = wrapRef.current; if (!el) return;
+    const el = canvasRef.current; if (!el) return;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) return;
     const first = sizeRef.current.w === 0;
@@ -119,7 +121,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
   }, [redraw, centerViewOn]);
 
   useLayoutEffect(() => {
-    const el = wrapRef.current; if (!el) return;
+    const el = canvasRef.current; if (!el) return;
     measure();
     const raf1 = requestAnimationFrame(measure);
     const raf2 = requestAnimationFrame(() => requestAnimationFrame(measure));
@@ -368,7 +370,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
   }, [area, viewTick]);
 
   return {
-    wrapRef, canvasRef,
+    canvasRef,
     onPointerDown, onPointerMove, onPointerUp,
     home, recenter,
     dimBadge, resizing, isTouch,

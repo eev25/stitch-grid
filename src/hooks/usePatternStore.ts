@@ -417,9 +417,8 @@ export function usePatternStore(): PatternStore {
   }, [canPixelate, imageSource, area, targets, cells, commitCells]);
 
   // ---------- new pattern ----------
+  // Clears the pattern and stitching session; the palette (and background) stay.
   const doNewPattern = useCallback(() => {
-    const f = freshState(false);
-    setBg(f.bg); setPalette(f.palette); setActiveId(f.activeId);
     setCells({}); setArea(null); setStitch(null);
     setTool("pencil");
     setHistory({ past: [], future: [] });

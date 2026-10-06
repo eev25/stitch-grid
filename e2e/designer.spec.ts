@@ -71,8 +71,16 @@ test.describe("Crochet Pattern Designer", () => {
     await expect(page.locator("canvas")).toBeVisible();
   });
 
-  test("New pattern resets the canvas; a single painted cell can be stitched via Next/Undo", async ({ page }) => {
+  test("New pattern resets the canvas but keeps the palette; a single painted cell can be stitched via Next/Undo", async ({ page }) => {
     await page.goto("/");
+
+    // Add a named color so we can check the palette survives the reset.
+    await page.getByRole("button", { name: "Add color" }).click();
+    await page.getByPlaceholder("Color name").fill("Added before reset");
+    await page.getByRole("button", { name: "Done" }).click();
+    await expect.poll(async () => (await readStore(page))?.palette.some((s) => s.label === "Added before reset"),
+      { timeout: 2000 }).toBe(true);
+    const paletteBefore = (await readStore(page))!.palette;
 
     // Open and confirm the destructive "new pattern" dialog.
     await page.locator('button[title="New pattern"]').click();
@@ -82,6 +90,11 @@ test.describe("Crochet Pattern Designer", () => {
     // Empty canvas -> hint shown, Begin Stitching disabled (no working area yet).
     await expect(page.getByText("Pick a color, then paint your first stitch")).toBeVisible();
     await expect(page.getByRole("button", { name: "Begin Stitching" })).toBeDisabled();
+
+    // ...but the palette is kept as-is.
+    await expect(page.getByText("Added before reset", { exact: true })).toBeVisible();
+    await expect.poll(async () => (await readStore(page))?.cells, { timeout: 2000 }).toEqual({});
+    expect((await readStore(page))!.palette).toEqual(paletteBefore);
 
     // Paint a single cell at the canvas center (world cell 0,0).
     const canvas = page.locator("canvas");

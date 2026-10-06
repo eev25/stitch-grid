@@ -42,7 +42,7 @@ export function Dialog({ dialog, onCancel, onNewPattern, onNewSession }: DialogP
       <DialogFrame onCancel={onCancel}>
         <div className={`${styles.dialogIcon} ${styles.warn}`}><Icons.Trash size={22} /></div>
         <h2>Start a new pattern?</h2>
-        <p>This will permanently erase your current pattern, palette, and stitching progress. This can&apos;t be undone.</p>
+        <p>This will permanently erase your current pattern and stitching progress. This can&apos;t be undone.</p>
         <div className={styles.dialogActions}>
           <button className={`${controls.btn} ${controls.btnGhost}`} onClick={onCancel}>Cancel</button>
           <button className={`${controls.btn} ${controls.btnDanger}`} onClick={onNewPattern}>Erase &amp; start new</button>

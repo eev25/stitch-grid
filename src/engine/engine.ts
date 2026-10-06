@@ -1,6 +1,5 @@
 /* ============================================================
    engine.ts — pure canvas drawing + math helpers
-   Ported 1:1 from design-reference/engine.jsx (logic unchanged).
    Framework-agnostic: no React, no DOM globals beyond canvas/CSS.
    ============================================================ */
 

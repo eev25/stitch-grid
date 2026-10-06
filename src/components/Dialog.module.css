@@ -1,8 +1,7 @@
 /* ============================================================
    Dialog.module.css
-   Ported from design-reference/styles.css — modal dialogs
-   ("new pattern" destructive confirm, "new session" confirm).
-   Token values unchanged.
+   Modal dialogs ("new pattern" destructive confirm,
+   "new session" confirm).
    ============================================================ */
 
 .dialogBackdrop {

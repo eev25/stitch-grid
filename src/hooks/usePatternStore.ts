@@ -1,7 +1,6 @@
 /* ============================================================
    usePatternStore — root pattern state, history, persistence,
    palette ops, and stitching-session ops.
-   Ported from design-reference/main.jsx (state model + logic).
    View/canvas/pointer handling lives in useDesignCanvas instead.
    ============================================================ */
 import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";

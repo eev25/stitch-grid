@@ -1,6 +1,5 @@
 /* ============================================================
    MobilePalette — bottom palette strip + expandable sheet.
-   Ported from design-reference/palette.jsx (window.MobilePalette).
    ============================================================ */
 import { useState } from "react";
 import * as Icons from "../icons/icons";

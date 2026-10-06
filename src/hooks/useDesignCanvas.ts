@@ -2,7 +2,6 @@
    useDesignCanvas — Design View canvas surface: sizing, redraw,
    pan/zoom (wheel + two-finger touch), and pointer handling for
    pencil/eraser/bucket/line/rect tools + working-area resize.
-   Ported from design-reference/main.jsx (canvas pointer section).
    ============================================================ */
 import {
   useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState,

@@ -1,7 +1,6 @@
 /* ============================================================
    icons.tsx — inline SVG icon set, 24x24 stroke icons.
-   Ported 1:1 from design-reference/icons.jsx (window.Icons.*)
-   as named React components.
+   Exported as named React components.
    ============================================================ */
 import type { ReactNode, SVGProps } from "react";
 

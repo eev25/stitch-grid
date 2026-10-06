@@ -1,6 +1,5 @@
 /* ============================================================
    ColorEditor — anchored color/label editor popover.
-   Ported from design-reference/palette.jsx (window.ColorEditor).
    ============================================================ */
 import { useEffect, useRef, useState } from "react";
 import * as Icons from "../icons/icons";

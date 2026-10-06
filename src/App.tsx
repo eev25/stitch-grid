@@ -2,7 +2,6 @@
    App — root component: wires the pattern store, the design
    canvas surface, and all top-level UI (topbar, palette, canvas
    overlays, mobile palette, color editor, dialogs, Stitching Mode).
-   Ported from design-reference/main.jsx (App + Dialog wiring).
    ============================================================ */
 import * as Icons from "./icons/icons";
 import { usePatternStore } from "./hooks/usePatternStore";
@@ -32,8 +31,8 @@ export function App() {
     pushHistory, commitCells, fitOnLoad: seeded,
   });
 
-  // Reset state, then recenter the design view (ported from main.jsx's
-  // doNewPattern, which calls home() at the end — split across two hooks here).
+  // Reset state, then recenter the design view (store and canvas live in
+  // separate hooks, so the two steps are called here).
   function handleNewPattern() {
     doNewPattern();
     canvas.home();

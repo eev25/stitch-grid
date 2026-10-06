@@ -1,7 +1,6 @@
 /* ============================================================
    StitchingView — Stitching Mode: bounded canvas with guided
    turned-row Next/Undo controls.
-   Ported from design-reference/stitching.jsx (window.StitchingView).
    ============================================================ */
 import { useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import * as E from "../engine/engine";

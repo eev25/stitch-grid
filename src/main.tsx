@@ -1,6 +1,5 @@
 /* ============================================================
    main.tsx — Vite entry point.
-   Ported from design-reference/main.jsx (ReactDOM.createRoot call).
    ============================================================ */
 import { createRoot } from "react-dom/client";
 import { App } from "./App";

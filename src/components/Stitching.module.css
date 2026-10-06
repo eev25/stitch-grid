@@ -1,9 +1,7 @@
 /* ============================================================
    Stitching.module.css
-   Ported from design-reference/styles.css — Stitching Mode
-   (.stitch-app, .stitch-topbar, .stitch-canvas-wrap, zoom
-   overlay, .stitch-actionbar, .btn-undo-stitch, .btn-next).
-   Token values unchanged.
+   Stitching Mode: top bar, canvas wrap, zoom overlay, and
+   action bar (undo / next).
    ============================================================ */
 
 .stitchApp {

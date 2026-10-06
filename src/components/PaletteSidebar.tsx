@@ -1,6 +1,5 @@
 /* ============================================================
    PaletteSidebar — desktop color palette sidebar.
-   Ported from design-reference/palette.jsx (window.PaletteSidebar).
    ============================================================ */
 import { useRef, useState, type DragEvent, type MouseEvent } from "react";
 import * as Icons from "../icons/icons";

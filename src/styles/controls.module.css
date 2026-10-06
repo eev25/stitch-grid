@@ -1,8 +1,6 @@
 /* ============================================================
    controls.module.css — shared button & icon-button primitives.
    Reused by DesignTopBar, Dialog, and StitchingView.
-   Ported from design-reference/styles.css (.btn*, .iconbtn,
-   .icon-group, .v-divider) — token values unchanged.
    ============================================================ */
 
 /* ---------- Buttons ---------- */

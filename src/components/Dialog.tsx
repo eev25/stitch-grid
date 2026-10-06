@@ -1,7 +1,6 @@
 /* ============================================================
    Dialog — "new pattern" (destructive) and "new session"
    (confirm) modal dialogs.
-   Ported from design-reference/main.jsx (Dialog).
    ============================================================ */
 import * as Icons from "../icons/icons";
 import type { DialogState } from "../types";

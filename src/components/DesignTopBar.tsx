@@ -1,6 +1,5 @@
 /* ============================================================
    DesignTopBar — Design View top bar.
-   Ported from design-reference/toolbar.jsx (window.DesignTopBar).
    ============================================================ */
 import type { Dispatch, SetStateAction } from "react";
 import * as Icons from "../icons/icons";

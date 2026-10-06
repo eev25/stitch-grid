@@ -1,8 +1,7 @@
 /* ============================================================
    App.module.css
-   Ported from design-reference/styles.css — app shell, workspace,
-   design canvas wrap, zoom overlay, dimension badge, canvas hint.
-   Token values + breakpoints unchanged.
+   App shell, workspace, design canvas wrap, zoom overlay,
+   dimension badge, canvas hint.
    ============================================================ */
 
 .app {

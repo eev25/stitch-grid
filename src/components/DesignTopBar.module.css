@@ -1,8 +1,7 @@
 /* ============================================================
    DesignTopBar.module.css
-   Ported from design-reference/styles.css (.topbar, .wordmark*,
-   .name-field, .segmented/.seg-btn, .hide-mobile/.only-mobile).
-   Token values + breakpoints unchanged.
+   Design View top bar: wordmark, name field, segmented
+   control, and mobile/desktop visibility helpers.
    ============================================================ */
 
 .topbar {

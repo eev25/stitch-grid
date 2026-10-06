@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 8px 7px 7px;
+  padding: 7px 8px;
   border-radius: var(--radius-sm);
   border: 1.5px solid transparent;
   position: relative;
@@ -57,17 +57,7 @@
   border-color: var(--accent);
   background: var(--accent-tint);
 }
-.swatchDrag {
-  color: var(--ink-faint);
-  opacity: 0;
-  cursor: grab;
-  display: grid; place-items: center;
-  margin-left: -2px;
-  transition: opacity .12s;
-  touch-action: none;
-}
-.swatchRow:hover .swatchDrag,
-.swatchRow.dragging .swatchDrag { opacity: 1; }
+.swatchRow[draggable="true"] { cursor: grab; }
 .swatchRow.dragging { opacity: .55; }
 .swatchChip {
   width: 26px; height: 26px;

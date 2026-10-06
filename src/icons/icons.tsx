@@ -163,16 +163,6 @@ export function Trash(p: IconProps) {
   );
 }
 
-export function Drag(p: IconProps) {
-  return (
-    <S {...p} sw={0} fill="currentColor">
-      <circle cx="9" cy="6" r="1.4" /><circle cx="15" cy="6" r="1.4" />
-      <circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" />
-      <circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="18" r="1.4" />
-    </S>
-  );
-}
-
 export function Check(p: IconProps) {
   return (<S {...p} sw={2.4}><path d="M5 12.5 10 17.5 19 6.5" /></S>);
 }

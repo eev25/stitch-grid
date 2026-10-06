@@ -144,4 +144,27 @@ test.describe("Crochet Pattern Designer", () => {
       slot: [charcoalId, "#f4efe3", "Cream"],
     });
   });
+
+  test("dragging anywhere on a swatch row reorders the palette", async ({ page }) => {
+    await page.goto("/");
+
+    await expect.poll(async () => (await readStore(page)) !== null, { timeout: 2000 }).toBe(true);
+    const labels = async () => (await readStore(page))?.palette.map((s) => s.label);
+    const before = (await labels())!;
+    expect(before.slice(0, 3)).toEqual(["Terracotta", "Rose", "Mustard"]);
+
+    // A plain click selects without reordering.
+    const sidebar = page.locator("aside");
+    await sidebar.getByText("Mustard", { exact: true }).click();
+    await expect.poll(async () => (await readStore(page))?.activeId, { timeout: 2000 })
+      .toBe((await readStore(page))!.palette[2].id);
+    expect(await labels()).toEqual(before);
+
+    // Drag from the row's label (not a dedicated handle) onto the first swatch.
+    await sidebar.getByText("Mustard", { exact: true })
+      .dragTo(sidebar.getByText("Terracotta", { exact: true }));
+
+    await expect.poll(labels, { timeout: 2000 })
+      .toEqual(["Mustard", "Terracotta", "Rose", ...before.slice(3)]);
+  });
 });

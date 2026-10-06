@@ -1,7 +1,7 @@
 /* ============================================================
    PaletteSidebar — desktop color palette sidebar.
    ============================================================ */
-import { useRef, useState, type DragEvent, type MouseEvent } from "react";
+import { useRef, useState, type DragEvent } from "react";
 import * as Icons from "../icons/icons";
 import type { Swatch } from "../types";
 import styles from "./Palette.module.css";
@@ -43,17 +43,12 @@ export function PaletteSidebar(props: PaletteSidebarProps) {
           return (
             <div key={sw.id}
               className={rowClass}
+              draggable={!isBg}
               onClick={() => onSelect(sw.id)}
+              onDragStart={(e: DragEvent<HTMLDivElement>) => { dragId.current = sw.id; e.dataTransfer.effectAllowed = "move"; }}
+              onDragEnd={() => { dragId.current = null; setOverId(null); }}
               onDragOver={(e: DragEvent<HTMLDivElement>) => { if (!isBg) { e.preventDefault(); setOverId(sw.id); } }}
               onDrop={() => handleDrop(sw.id)}>
-              <span className={styles.swatchDrag}
-                draggable={!isBg}
-                onDragStart={(e: DragEvent<HTMLSpanElement>) => { dragId.current = sw.id; e.dataTransfer.effectAllowed = "move"; }}
-                onDragEnd={() => { dragId.current = null; setOverId(null); }}
-                style={{ visibility: isBg ? "hidden" : "visible" }}
-                onClick={(e: MouseEvent) => e.stopPropagation()}>
-                <Icons.Drag size={16} />
-              </span>
               <span className={`${styles.swatchChip}${isBg ? ` ${styles.bgChip}` : ""}`}
                 style={{ background: sw.color }} />
               <span className={styles.swatchLabel}>

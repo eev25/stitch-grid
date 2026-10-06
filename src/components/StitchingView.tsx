@@ -199,6 +199,12 @@ export function StitchingView(props: StitchingViewProps) {
 
   const onPointerUp = useCallback(() => { drag.current = null; }, []);
 
+  // Home: restore the entry framing (whole selection, current stitch centered).
+  const recenter = useCallback(() => {
+    centerOn(pointer, true);
+    redraw();
+  }, [centerOn, pointer, redraw]);
+
   const done = pointer >= seq.length;
   // tint = color of the UPCOMING stitch (becomes current after this press)
   const upcoming = !done ? (seq[pointer + 1] || null) : null;
@@ -226,6 +232,9 @@ export function StitchingView(props: StitchingViewProps) {
           onMouseDown={onPointerDown} onMouseMove={onPointerMove}
           onMouseUp={onPointerUp} onMouseLeave={onPointerUp}
           onTouchStart={onPointerDown} onTouchMove={onPointerMove} onTouchEnd={onPointerUp} />
+        <div className={styles.canvasOverlay}>
+          <button onClick={recenter} title="Recenter on current stitch" aria-label="Recenter"><Icons.Home size={20} /></button>
+        </div>
       </div>
 
       <div className={styles.stitchActionbar}>

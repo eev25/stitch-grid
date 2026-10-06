@@ -114,6 +114,31 @@ test.describe("Crochet Pattern Designer", () => {
     await expect(undoBtn).toBeDisabled();
   });
 
+  test("Recenter in Stitching Mode restores the view after panning away", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    await expect(page.getByRole("button", { name: "Exit Stitching" })).toBeVisible();
+
+    const canvas = page.locator("canvas");
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error("canvas has no bounding box");
+    // Mask the floating button so only the canvas drawing is compared.
+    const recenter = page.getByRole("button", { name: "Recenter" });
+    const shot = () => canvas.screenshot({ mask: [recenter] });
+    const initial = await shot();
+
+    // Drag the view far off the pattern.
+    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx - 300, cy - 200, { steps: 5 });
+    await page.mouse.up();
+    expect((await shot()).equals(initial)).toBe(false);
+
+    await recenter.click();
+    expect((await shot()).equals(initial)).toBe(true);
+  });
+
   test("Set as background swaps a swatch with the background", async ({ page }) => {
     await page.goto("/");
 

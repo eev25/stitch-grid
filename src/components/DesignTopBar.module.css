@@ -45,7 +45,8 @@
 .wordmarkMark {
   width: 26px; height: 26px;
   display: grid; place-items: center;
-  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
   flex: 0 0 auto;
 }
 .wordmarkText {

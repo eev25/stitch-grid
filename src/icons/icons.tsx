@@ -17,17 +17,6 @@ function S({ size = 20, sw = 1.9, children, fill = "none", ...rest }: IconProps 
   );
 }
 
-// Yarn-ball wordmark
-export function Yarn(p: IconProps) {
-  return (
-    <S {...p} sw={1.7}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M5 9c3 2 11 2 14 0M4.5 14c4 2.5 10.5 2.5 15 0" />
-      <path d="M9 3.6C6.5 6 6 11 8 20.4M15 3.6c2.5 2.4 3 7.4 1 16.8" />
-    </S>
-  );
-}
-
 // Modes
 export function Paint(p: IconProps) {
   return (

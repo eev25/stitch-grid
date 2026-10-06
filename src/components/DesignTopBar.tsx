@@ -41,7 +41,7 @@ export function DesignTopBar(props: DesignTopBarProps) {
   return (
     <header className={styles.topbar}>
       <div className={`${styles.wordmark} ${styles.hideMobile}`}>
-        <span className={styles.wordmarkMark}><Icons.Yarn size={24} /></span>
+        <span className={styles.wordmarkMark} aria-hidden="true">🧶</span>
         <span className={styles.wordmarkText}>Stitch Grid</span>
       </div>
 

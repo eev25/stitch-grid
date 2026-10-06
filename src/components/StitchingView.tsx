@@ -206,12 +206,12 @@ export function StitchingView(props: StitchingViewProps) {
   }, [centerOn, pointer, redraw]);
 
   const done = pointer >= seq.length;
-  // tint = color of the UPCOMING stitch (becomes current after this press)
-  const upcoming = !done ? (seq[pointer + 1] || null) : null;
-  const upcomingColor = upcoming ? (cells[E.key(upcoming.x, upcoming.y)] || bg) : null;
-  const nextStyle: CSSVars = done || !upcomingColor
+  // tint = color of the CURRENT stitch (the one this press marks done)
+  const current = !done ? (seq[pointer] || null) : null;
+  const currentColor = current ? (cells[E.key(current.x, current.y)] || bg) : null;
+  const nextStyle: CSSVars = done || !currentColor
     ? {}
-    : { "--next-bg": upcomingColor, "--next-fg": E.contrastInk(upcomingColor) };
+    : { "--next-bg": currentColor, "--next-fg": E.contrastInk(currentColor) };
 
   return (
     <div className={styles.stitchApp}>
@@ -248,7 +248,7 @@ export function StitchingView(props: StitchingViewProps) {
           ) : (
             <>
               Next
-              {upcomingColor && <span className={styles.yarnDot} style={{ background: upcomingColor }} />}
+              {currentColor && <span className={styles.yarnDot} style={{ background: currentColor }} />}
             </>
           )}
         </button>

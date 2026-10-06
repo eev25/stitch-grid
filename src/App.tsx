@@ -51,7 +51,6 @@ export function App() {
       <DesignTopBar
         name={name} onName={setName}
         tool={tool} setTool={setTool}
-        canUndo={canUndo} canRedo={canRedo} onUndo={doUndo} onRedo={doRedo}
         canBegin={canBegin} onBegin={beginStitching}
         onNewPattern={() => setDialog({ type: "new" })} />
 
@@ -79,10 +78,11 @@ export function App() {
             </div>
           )}
 
-          <div className={styles.zoomOverlay}>
+          <div className={`${styles.canvasOverlay}${canvas.isTouch ? ` ${styles.touch}` : ""}`}>
             <button onClick={canvas.recenter} title="Recenter on working area" aria-label="Recenter"><Icons.Home size={20} /></button>
-            <button onClick={() => canvas.zoom(1)} title="Zoom in" aria-label="Zoom in"><Icons.Plus size={20} /></button>
-            <button onClick={() => canvas.zoom(-1)} title="Zoom out" aria-label="Zoom out"><Icons.Minus size={20} /></button>
+            {/* Keyboard users have Ctrl+Z / Ctrl+Shift+Z; touch and narrow screens get buttons */}
+            <button className={styles.historyBtn} onClick={doUndo} disabled={!canUndo} title="Undo" aria-label="Undo"><Icons.Undo size={20} /></button>
+            <button className={styles.historyBtn} onClick={doRedo} disabled={!canRedo} title="Redo" aria-label="Redo"><Icons.Redo size={20} /></button>
           </div>
         </div>
       </div>

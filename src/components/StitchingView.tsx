@@ -199,16 +199,6 @@ export function StitchingView(props: StitchingViewProps) {
 
   const onPointerUp = useCallback(() => { drag.current = null; }, []);
 
-  const zoom = useCallback((dir: number) => {
-    const v = viewRef.current;
-    const { w, h } = sizeRef.current;
-    const cx = (w / 2 - v.panX) / v.cell, cy = (h / 2 - v.panY) / v.cell;
-    v.cell = Math.max(8, Math.min(64, v.cell * (dir > 0 ? 1.25 : 0.8)));
-    v.panX = w / 2 - cx * v.cell;
-    v.panY = h / 2 - cy * v.cell;
-    redraw();
-  }, [redraw]);
-
   const done = pointer >= seq.length;
   // tint = color of the UPCOMING stitch (becomes current after this press)
   const upcoming = !done ? (seq[pointer + 1] || null) : null;
@@ -239,10 +229,6 @@ export function StitchingView(props: StitchingViewProps) {
           onMouseDown={onPointerDown} onMouseMove={onPointerMove}
           onMouseUp={onPointerUp} onMouseLeave={onPointerUp}
           onTouchStart={onPointerDown} onTouchMove={onPointerMove} onTouchEnd={onPointerUp} />
-        <div className={styles.zoomOverlay}>
-          <button onClick={() => zoom(1)} title="Zoom in" aria-label="Zoom in"><Icons.Plus size={20} /></button>
-          <button onClick={() => zoom(-1)} title="Zoom out" aria-label="Zoom out"><Icons.Minus size={20} /></button>
-        </div>
       </div>
 
       <div className={styles.stitchActionbar}>

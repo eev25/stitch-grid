@@ -1,6 +1,6 @@
 /* ============================================================
    App.module.css
-   App shell, workspace, design canvas wrap, zoom overlay,
+   App shell, workspace, design canvas wrap, canvas overlay,
    dimension badge, canvas hint.
    ============================================================ */
 
@@ -33,8 +33,8 @@
   .canvasWrap { padding-bottom: 64px; }
 }
 
-/* On-canvas zoom overlay */
-.zoomOverlay {
+/* On-canvas overlay: recenter, plus undo/redo on touch or narrow screens */
+.canvasOverlay {
   position: absolute;
   right: 18px;
   bottom: 18px;
@@ -47,18 +47,22 @@
   overflow: hidden;
   z-index: 7;
 }
-.zoomOverlay button {
+.canvasOverlay button {
   width: 44px; height: 44px;
   display: grid; place-items: center;
   color: var(--ink-soft);
   transition: background .12s, color .12s;
 }
-.zoomOverlay button:hover { background: var(--paper-2); color: var(--ink); }
-.zoomOverlay button:active { background: var(--line-soft); }
-.zoomOverlay button + button { border-top: 1px solid var(--line); }
+.canvasOverlay button:hover:not(:disabled) { background: var(--paper-2); color: var(--ink); }
+.canvasOverlay button:active:not(:disabled) { background: var(--line-soft); }
+.canvasOverlay button:disabled { color: var(--ink-faint); opacity: .45; cursor: default; }
+.canvasOverlay button + button { border-top: 1px solid var(--line); }
+.canvasOverlay .historyBtn { display: none; }
+.canvasOverlay.touch .historyBtn { display: grid; }
 
 @media (max-width: 860px) {
-  .canvasWrap .zoomOverlay { bottom: 82px; }
+  .canvasWrap .canvasOverlay { bottom: 82px; }
+  .canvasOverlay .historyBtn { display: grid; }
 }
 
 /* Selection dimension badge */

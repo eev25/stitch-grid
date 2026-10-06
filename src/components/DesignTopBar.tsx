@@ -24,30 +24,11 @@ function Seg({ icon: Icon, label, active, onClick }: SegProps) {
   );
 }
 
-interface IconBtnProps {
-  icon: IconComponent;
-  onClick: () => void;
-  disabled?: boolean;
-  title: string;
-}
-
-function IconBtn({ icon: Icon, onClick, disabled, title }: IconBtnProps) {
-  return (
-    <button className={controls.iconbtn} onClick={onClick} disabled={disabled} title={title} aria-label={title}>
-      <Icon size={19} />
-    </button>
-  );
-}
-
 export interface DesignTopBarProps {
   name: string;
   onName: Dispatch<SetStateAction<string>>;
   tool: Tool;
   setTool: Dispatch<SetStateAction<Tool>>;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
   canBegin: boolean;
   onBegin: () => void;
   onNewPattern: () => void;
@@ -56,7 +37,6 @@ export interface DesignTopBarProps {
 export function DesignTopBar(props: DesignTopBarProps) {
   const {
     name, onName, tool, setTool,
-    canUndo, canRedo, onUndo, onRedo,
     canBegin, onBegin, onNewPattern,
   } = props;
 
@@ -105,13 +85,6 @@ export function DesignTopBar(props: DesignTopBarProps) {
         <Icons.Begin size={19} />
       </button>
 
-      <div className={controls.vDivider} />
-
-      {/* History */}
-      <div className={controls.iconGroup}>
-        <IconBtn icon={Icons.Undo} onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl+Z)" />
-        <IconBtn icon={Icons.Redo} onClick={onRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" />
-      </div>
 
       <div className={`${controls.vDivider} ${styles.hideMobile}`} />
       <button className={`${controls.iconbtn} ${controls.bordered} ${styles.hideMobile}`} onClick={onNewPattern} title="New pattern">

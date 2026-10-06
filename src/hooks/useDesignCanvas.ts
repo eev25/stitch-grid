@@ -40,7 +40,6 @@ export interface DesignCanvasApi {
   onPointerDown: (e: CanvasPointerEvent) => void;
   onPointerMove: (e: CanvasPointerEvent) => void;
   onPointerUp: () => void;
-  zoom: (dir: number) => void;
   home: () => void;
   recenter: () => void;
   dimBadge: DimBadge | null;
@@ -178,14 +177,6 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
   }, [topView]);
 
   // ---------- view ops ----------
-  const zoom = useCallback((dir: number) => {
-    const v = viewRef.current; const { w, h } = sizeRef.current;
-    const cx = (w / 2 - v.panX) / v.cell, cy = (h / 2 - v.panY) / v.cell;
-    v.cell = Math.max(8, Math.min(72, v.cell * (dir > 0 ? 1.25 : 0.8)));
-    v.panX = w / 2 - cx * v.cell; v.panY = h / 2 - cy * v.cell;
-    redraw(); setViewTick((t) => t + 1);
-  }, [redraw]);
-
   const home = useCallback(() => {
     const v = viewRef.current; const { w, h } = sizeRef.current;
     v.panX = w / 2; v.panY = h / 2;
@@ -379,7 +370,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
   return {
     wrapRef, canvasRef,
     onPointerDown, onPointerMove, onPointerUp,
-    zoom, home, recenter,
+    home, recenter,
     dimBadge, resizing, isTouch,
   };
 }

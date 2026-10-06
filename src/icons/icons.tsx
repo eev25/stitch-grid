@@ -140,14 +140,6 @@ export function Home(p: IconProps) {
   );
 }
 
-export function Plus(p: IconProps) {
-  return (<S {...p}><path d="M12 5v14M5 12h14" /></S>);
-}
-
-export function Minus(p: IconProps) {
-  return (<S {...p}><path d="M5 12h14" /></S>);
-}
-
 export function Add(p: IconProps) {
   return (<S {...p} sw={2.1}><path d="M12 6v12M6 12h12" /></S>);
 }

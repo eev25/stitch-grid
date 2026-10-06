@@ -56,15 +56,5 @@
 .iconbtn:disabled { color: var(--ink-faint); opacity: .45; cursor: default; background: none; }
 .bordered { border-color: var(--line); }
 
-.iconGroup {
-  display: inline-flex;
-  background: var(--panel-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-.iconGroup .iconbtn { border-radius: 0; width: 36px; height: 36px; border: none; }
-.iconGroup .iconbtn + .iconbtn { border-left: 1px solid var(--line); }
-
 /* ---------- Divider ---------- */
 .vDivider { width: 1px; align-self: stretch; background: var(--line); margin: 6px 2px; }

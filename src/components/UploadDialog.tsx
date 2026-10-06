@@ -35,8 +35,6 @@ export interface UploadResult {
 export interface UploadDialogProps {
   file: File;
   palette: Swatch[];
-  /** Offer "Clear existing work" (hidden when the canvas is empty). */
-  canClear: boolean;
   hasStitchProgress: boolean;
   onCancel: () => void;
   onAdd: (result: UploadResult) => Promise<void>;
@@ -51,7 +49,7 @@ const extract = (small: ImageData, k: number): ExtractedColor[] =>
   extractPalette(small, k).map((color) => ({ color, label: null, checked: true }));
 
 export function UploadDialog(props: UploadDialogProps) {
-  const { file, palette, canClear, hasStitchProgress, onCancel, onAdd } = props;
+  const { file, palette, hasStitchProgress, onCancel, onAdd } = props;
   const [load, setLoad] = useState<LoadState>({ status: "loading" });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [count, setCount] = useState(DEFAULT_COLOR_COUNT);
@@ -82,11 +80,10 @@ export function UploadDialog(props: UploadDialogProps) {
   // Labels the checked colors will get: edited ones keep theirs, the rest
   // are numbered on from the palette's last "Image color N" (or from 1 when
   // the palette is being replaced).
-  const clearing = canClear && clear;
   const labels = useMemo(() => {
-    let n = clearing ? 1 : nextImageColorNumber(palette);
+    let n = clear ? 1 : nextImageColorNumber(palette);
     return colors.map((c) => c.label ?? (c.checked ? imageColorLabel(n++) : ""));
-  }, [colors, clearing, palette]);
+  }, [colors, clear, palette]);
 
   const checkedCount = colors.filter((c) => c.checked).length;
 
@@ -121,7 +118,7 @@ export function UploadDialog(props: UploadDialogProps) {
       await onAdd({
         source: load.source,
         colors: colors.flatMap((c, i) => (c.checked ? [{ color: c.color, label: labels[i] }] : [])),
-        clear: clearing,
+        clear,
       });
     } finally {
       setBusy(false);
@@ -187,13 +184,11 @@ export function UploadDialog(props: UploadDialogProps) {
               })}
             </ul>
 
-            {canClear && (
-              <label className={styles.clearRow}>
-                <input type="checkbox" checked={clear} onChange={(e) => setClear(e.target.checked)} />
-                <span>Clear existing work</span>
-              </label>
-            )}
-            {clearing && (
+            <label className={styles.clearRow}>
+              <input type="checkbox" checked={clear} onChange={(e) => setClear(e.target.checked)} />
+              <span>Clear existing work</span>
+            </label>
+            {clear && (
               <div className={`${styles.note}${hasStitchProgress ? ` ${styles.warn}` : ""}`} role="alert">
                 Erases your cells, palette, and undo history
                 {hasStitchProgress ? ", and discards your stitching progress" : ""}. This can&apos;t be undone.

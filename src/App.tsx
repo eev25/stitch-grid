@@ -140,7 +140,7 @@ export function App() {
 
       {uploadFile && (
         <UploadDialog file={uploadFile} palette={palette}
-          canClear={hasCells} hasStitchProgress={!!stitch && stitch.pointer > 0}
+          hasStitchProgress={!!stitch && stitch.pointer > 0}
           onCancel={() => setUploadFile(null)} onAdd={handleAddImage} />
       )}
     </div>

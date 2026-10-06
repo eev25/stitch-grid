@@ -57,7 +57,6 @@ test("upload an image, pixelate it, move it, and remove it", async ({ page }) =>
   await expect(checks.nth(0)).toBeDisabled();
   await checks.nth(1).check();
 
-  // The seeded sample has cells, so "Clear existing work" is offered.
   await dialog.getByLabel("Clear existing work").check();
   await expect(dialog.getByText("This can't be undone.")).toBeVisible();
   await dialog.getByRole("button", { name: "Add image" }).click();

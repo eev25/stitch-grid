@@ -15,7 +15,7 @@ import {
   floodFill,
   lineCells,
   rectCells,
-  gridStrokes,
+  gridStroke,
 } from "../src/engine/engine";
 
 describe("buildSequence", () => {
@@ -204,26 +204,14 @@ describe("isLight / contrastInk", () => {
   });
 });
 
-describe("gridStrokes", () => {
-  const alpha = (rgba: string) => Number(rgba.match(/,\s*([\d.]+)\)$/)![1]);
+describe("gridStroke", () => {
   const rgb = (rgba: string) => rgba.match(/^rgba\((\d+),\s*(\d+),\s*(\d+)/)!.slice(1).map(Number);
 
   it("uses the dark ink on a light background", () => {
-    const { line, axis } = gridStrokes("#f4efe3");
-    expect(rgb(line)).toEqual([0x2a, 0x27, 0x24]);
-    expect(rgb(axis)).toEqual([0x2a, 0x27, 0x24]);
+    expect(rgb(gridStroke("#f4efe3"))).toEqual([0x2a, 0x27, 0x24]);
   });
 
   it("uses the light ink on a dark background", () => {
-    const { line, axis } = gridStrokes("#2e2b29");
-    expect(rgb(line)).toEqual([0xfb, 0xf7, 0xf0]);
-    expect(rgb(axis)).toEqual([0xfb, 0xf7, 0xf0]);
-  });
-
-  it("always draws the axes stronger than the grid", () => {
-    for (const bg of ["#f4efe3", "#2e2b29", "#a89b8c", "#6e8b5b", "#ffffff", "#000000"]) {
-      const { line, axis } = gridStrokes(bg);
-      expect(alpha(axis)).toBeGreaterThan(alpha(line));
-    }
+    expect(rgb(gridStroke("#2e2b29"))).toEqual([0xfb, 0xf7, 0xf0]);
   });
 });

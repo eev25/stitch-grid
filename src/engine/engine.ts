@@ -33,10 +33,10 @@ export const isLight = (hex: string): boolean => luminance(hex) > 0.5;
 
 export const contrastInk = (hex: string): string => (isLight(hex) ? "#2a2724" : "#fbf7f0");
 
-/** Grid and origin-axis stroke colors: translucent contrast ink, so both stay visible on any background. */
-export function gridStrokes(bg: string): { line: string; axis: string } {
+/** Grid stroke color: translucent contrast ink, so it stays visible on any background. */
+export function gridStroke(bg: string): string {
   const { r, g, b } = hexToRgb(contrastInk(bg));
-  return { line: `rgba(${r}, ${g}, ${b}, 0.13)`, axis: `rgba(${r}, ${g}, ${b}, 0.4)` };
+  return `rgba(${r}, ${g}, ${b}, 0.13)`;
 }
 
 // ---- working area (bbox of painted cells) ----
@@ -157,9 +157,8 @@ export function drawDesign(ctx: CanvasRenderingContext2D, o: DrawDesignOptions):
 
   // grid lines
   if (v.cell >= 5) {
-    const strokes = gridStrokes(bg);
     ctx.lineWidth = 1;
-    ctx.strokeStyle = strokes.line;
+    ctx.strokeStyle = gridStroke(bg);
     ctx.beginPath();
     for (let x = c0x; x <= c1x + 1; x++) {
       const sx = Math.round(v.panX + x * v.cell) + 0.5;
@@ -169,16 +168,6 @@ export function drawDesign(ctx: CanvasRenderingContext2D, o: DrawDesignOptions):
       const sy = Math.round(v.panY + y * v.cell) + 0.5;
       ctx.moveTo(0, sy); ctx.lineTo(w, sy);
     }
-    ctx.stroke();
-
-    // origin emphasis lines
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = strokes.axis;
-    ctx.beginPath();
-    const ox = Math.round(v.panX);
-    const oy = Math.round(v.panY);
-    if (ox > -2 && ox < w + 2) { ctx.moveTo(ox, 0); ctx.lineTo(ox, h); }
-    if (oy > -2 && oy < h + 2) { ctx.moveTo(0, oy); ctx.lineTo(w, oy); }
     ctx.stroke();
   }
 
@@ -284,7 +273,7 @@ export function drawStitching(ctx: CanvasRenderingContext2D, o: DrawStitchingOpt
   // grid
   if (v.cell >= 5) {
     ctx.lineWidth = 1;
-    ctx.strokeStyle = gridStrokes(bg).line;
+    ctx.strokeStyle = gridStroke(bg);
     ctx.beginPath();
     for (let x = sel.x0; x <= sel.x1 + 1; x++) {
       const sx = Math.round(v.panX + x * v.cell) + 0.5;

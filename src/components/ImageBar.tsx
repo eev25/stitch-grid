@@ -80,9 +80,9 @@ export function ImageBar(props: ImageBarProps) {
         title={hidden ? "Show the cells in the area" : "Hide the cells in the area to see the image"}
         aria-label={hidden ? "Show cells" : "Hide cells"}>
         {hidden ? <Icons.Eye size={18} /> : <Icons.EyeOff size={18} />}
-        <span className={styles.label}>{hidden ? "Show" : "Hide"}</span>
+        <span className={styles.label}>Peek</span>
       </button>
-      <button className={styles.btn} onClick={onRemove} title="Remove the image (keeps the area)" aria-label="Remove image">
+      <button className={styles.btn} onClick={onRemove} title="Remove the image" aria-label="Remove image">
         <Icons.X size={18} /><span className={styles.label}>Remove</span>
       </button>
       <span className={styles.divider} />

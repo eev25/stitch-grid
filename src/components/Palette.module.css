@@ -4,6 +4,8 @@
    strip/sheet.
    ============================================================ */
 
+@import "../styles/media.css";
+
 /* ---------- Desktop sidebar ---------- */
 .palette {
   flex: 0 0 var(--palette-width);
@@ -36,7 +38,7 @@
 }
 .paletteFoot { padding: 8px 10px 12px; }
 
-@media (max-width: 860px) {
+@media (--mobile) {
   .palette { display: none; }
 }
 
@@ -196,7 +198,7 @@
   z-index: 15;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-@media (max-width: 860px) {
+@media (--mobile) {
   .mobilePalette { display: flex; }
 }
 .mobileStrip {

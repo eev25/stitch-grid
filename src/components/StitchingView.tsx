@@ -221,7 +221,7 @@ export function StitchingView(props: StitchingViewProps) {
         </button>
         <div className={styles.topbarSpacer} />
         {done && (
-          <span className={`${styles.stitchCompleteTag} ${styles.hideMobile}`}>
+          <span className={`${styles.stitchCompleteTag} ${controls.hideMobile}`}>
             <Icons.Check size={16} /> Pattern complete
           </span>
         )}

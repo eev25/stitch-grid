@@ -1,0 +1,10 @@
+/* ============================================================
+   media.css — the single source of truth for app-wide breakpoints.
+   Import it into any stylesheet that needs them, then write
+   `@media (--mobile) { … }`. postcss-custom-media (vite.config.ts)
+   compiles these down to plain media queries; this file emits no CSS.
+   ============================================================ */
+
+/* Phone + tablet layout: palette moves to a bottom strip, labels
+   collapse to icons, desktop-only chrome is hidden. */
+@custom-media --mobile (max-width: 860px);

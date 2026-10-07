@@ -1,7 +1,7 @@
 /* ============================================================
    DesignTopBar — Design View top bar.
    ============================================================ */
-import { useRef, type Dispatch, type SetStateAction } from "react";
+import { useId, useRef, type Dispatch, type SetStateAction } from "react";
 import * as Icons from "../icons/icons";
 import type { IconComponent } from "../icons/icons";
 import { ACCEPTED_IMAGE_TYPES } from "../lib/imageFile";
@@ -40,10 +40,12 @@ export function DesignTopBar(props: DesignTopBarProps) {
     canBegin, onBegin, onNewPattern, onUploadImage,
   } = props;
   const fileRef = useRef<HTMLInputElement>(null);
+  const menuId = useId();
+  const pickFile = () => fileRef.current?.click();
 
   return (
     <header className={styles.topbar}>
-      <div className={`${styles.wordmark} ${styles.hideMobile}`}>
+      <div className={`${styles.wordmark} ${controls.hideMobile}`}>
         <span className={styles.wordmarkMark} aria-hidden="true">🧶</span>
         <span className={styles.wordmarkText}>Stitch Grid</span>
       </div>
@@ -62,7 +64,7 @@ export function DesignTopBar(props: DesignTopBarProps) {
       {/* Upload an image to trace / pixelate */}
       <button
         className={`${controls.btn} ${controls.btnGhost} ${styles.uploadBtn}`}
-        onClick={() => fileRef.current?.click()}
+        onClick={pickFile}
         title="Upload image"
         aria-label="Upload image"
       >
@@ -94,15 +96,36 @@ export function DesignTopBar(props: DesignTopBarProps) {
         <span className={styles.beginText}>Begin Stitching</span>
       </button>
 
-      <div className={`${controls.vDivider} ${styles.hideMobile}`} />
+      <div className={`${controls.vDivider} ${controls.hideMobile}`} />
       <button
-        className={`${controls.iconbtn} ${controls.bordered}`}
+        className={`${controls.iconbtn} ${controls.bordered} ${styles.newBtn}`}
         onClick={onNewPattern}
         title="New pattern"
         aria-label="New pattern"
       >
         <Icons.Trash size={18} />
       </button>
+
+      {/* Narrow screens: Upload image and New pattern move into this menu.
+          The native popover handles open/close, outside taps and Escape. */}
+      <button
+        className={`${controls.iconbtn} ${controls.bordered} ${styles.moreBtn}`}
+        popoverTarget={menuId}
+        title="More actions"
+        aria-label="More actions"
+      >
+        <Icons.More size={18} />
+      </button>
+      <div id={menuId} popover="auto" className={styles.menu}>
+        <button className={`${controls.btn} ${styles.menuItem}`}
+          popoverTarget={menuId} popoverTargetAction="hide" onClick={pickFile}>
+          <Icons.Picture size={18} />Upload image
+        </button>
+        <button className={`${controls.btn} ${styles.menuItem}`}
+          popoverTarget={menuId} popoverTargetAction="hide" onClick={onNewPattern}>
+          <Icons.Trash size={18} />New pattern
+        </button>
+      </div>
     </header>
   );
 }

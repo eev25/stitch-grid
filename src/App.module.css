@@ -4,6 +4,8 @@
    dimension badge, canvas hint.
    ============================================================ */
 
+@import "./styles/media.css";
+
 .app {
   height: 100%;
   display: flex;
@@ -29,7 +31,7 @@
 .canvasEl { display: block; width: 100%; height: 100%; }
 .canvasEl.modePaint { cursor: crosshair; }
 
-@media (max-width: 860px) {
+@media (--mobile) {
   .canvasWrap { padding-bottom: 64px; }
 }
 
@@ -60,7 +62,7 @@
 .canvasOverlay .historyBtn { display: none; }
 .canvasOverlay.touch .historyBtn { display: grid; }
 
-@media (max-width: 860px) {
+@media (--mobile) {
   .canvasWrap .canvasOverlay { bottom: 82px; }
   .canvasOverlay .historyBtn { display: grid; }
 }

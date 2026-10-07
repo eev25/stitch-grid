@@ -1,7 +1,10 @@
 /* ============================================================
-   controls.module.css — shared button & icon-button primitives.
+   controls.module.css — shared button & icon-button primitives,
+   plus the hideMobile visibility helper.
    Reused by DesignTopBar, Dialog, and StitchingView.
    ============================================================ */
+
+@import "./media.css";
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -58,3 +61,8 @@
 
 /* ---------- Divider ---------- */
 .vDivider { width: 1px; align-self: stretch; background: var(--line); margin: 6px 2px; }
+
+/* ---------- Visibility ---------- */
+@media (--mobile) {
+  .hideMobile { display: none !important; }
+}

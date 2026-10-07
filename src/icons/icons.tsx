@@ -152,6 +152,10 @@ export function Trash(p: IconProps) {
   );
 }
 
+export function More(p: IconProps) {
+  return (<S {...p} sw={3}><path d="M5 12h.01M12 12h.01M19 12h.01" /></S>);
+}
+
 export function Check(p: IconProps) {
   return (<S {...p} sw={2.4}><path d="M5 12.5 10 17.5 19 6.5" /></S>);
 }

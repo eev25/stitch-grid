@@ -4,6 +4,8 @@
    icon-only 40px targets on mobile.
    ============================================================ */
 
+@import "../styles/media.css";
+
 .bar {
   position: absolute;
   display: flex;
@@ -51,7 +53,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 860px) {
+@media (--mobile) {
   .label { display: none; }
   .btn, .grip { width: 40px; height: 40px; padding: 0; justify-content: center; }
 }

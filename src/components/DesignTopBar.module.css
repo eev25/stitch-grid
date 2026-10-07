@@ -1,9 +1,11 @@
 /* ============================================================
    DesignTopBar.module.css
-   Design View top bar: wordmark, segmented
-   control, Upload image and Begin Stitching buttons, and mobile
-   visibility helpers.
+   Design View top bar: wordmark, segmented control, the
+   Upload image and Begin Stitching buttons, and the narrow-screen
+   More actions menu.
    ============================================================ */
+
+@import "../styles/media.css";
 
 .topbar {
   flex: 0 0 auto;
@@ -91,19 +93,48 @@
 /* ---------- Begin Stitching / Upload image ---------- */
 .beginBtn svg, .uploadBtn svg { flex: 0 0 auto; }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 860px) {
-  .hideMobile { display: none !important; }
-  /* Begin Stitching collapses to a square icon button. */
-  .beginText, .uploadText { display: none; }
-  .beginBtn, .uploadBtn { width: 38px; padding: 0; justify-content: center; }
-  .topbar { gap: 10px; padding: 9px 12px; }
+/* ---------- More actions menu (narrow screens only) ---------- */
+/* `.topbar` prefix outranks the shared button display rules. */
+.topbar .moreBtn { display: none; }
+/* Popovers render in the top layer; pin it under the bar's right end. */
+.menu {
+  inset: auto;
+  top: 56px;
+  right: 12px;
+  margin: 0;
+  padding: 6px;
+  min-width: 190px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
 }
+.menuItem { width: 100%; color: var(--ink-soft); padding: 0 12px; }
+.menuItem:hover { background: var(--paper-2); color: var(--ink); }
 
-@media (max-width: 560px) {
+/* ---------- Responsive ---------- */
+/* 1060px and 600px are where this bar's own contents stop fitting; they
+   are local to the top bar, not app-wide breakpoints (see media.css). */
+
+/* Begin Stitching / Upload image collapse to wide icon buttons before the
+   labelled row runs out of room (it needs ~1050px with the wordmark). */
+@media (max-width: 1060px) {
+  .beginText, .uploadText { display: none; }
+  .beginBtn, .uploadBtn { width: 56px; padding: 0; justify-content: center; }
   /* Tools fill the remaining width instead of the spacer. */
   .topbarSpacer { display: none; }
   .segmented { flex: 1 1 auto; min-width: 0; }
   .segBtn { flex: 1 1 0; min-width: 0; justify-content: center; padding: 0; }
+}
+
+@media (--mobile) {
+  .topbar { gap: 10px; padding: 9px 12px; }
+}
+
+@media (max-width: 600px) {
   .segBtn .segText { display: none; }
+  /* Upload image and New pattern move into the More actions menu. */
+  .topbar .uploadBtn, .topbar .newBtn { display: none; }
+  .topbar .moreBtn { display: grid; }
 }

@@ -116,8 +116,3 @@
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 13px; font-weight: 700; color: var(--accent);
 }
-
-/* ---------- Responsive ---------- */
-@media (max-width: 860px) {
-  .hideMobile { display: none !important; }
-}

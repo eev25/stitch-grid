@@ -217,7 +217,7 @@ export function StitchingView(props: StitchingViewProps) {
     <div className={styles.stitchApp}>
       <header className={styles.stitchTopbar}>
         <button className={`${controls.btn} ${controls.btnGhost}`} onClick={onExit}>
-          <Icons.Exit size={18} /> Exit Stitching
+          <Icons.Exit size={18} /> Edit Pattern
         </button>
         <div className={styles.topbarSpacer} />
         {done && (

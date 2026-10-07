@@ -192,7 +192,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
         const px = e.clientX - r.left; const py = e.clientY - r.top;
         const cx = (px - v.panX) / v.cell; const cy = (py - v.panY) / v.cell;
         const factor = e.deltaY < 0 ? 1.05 : 0.95;
-        v.cell = Math.max(8, Math.min(72, v.cell * factor));
+        v.cell = Math.max(E.MIN_CELL, Math.min(72, v.cell * factor));
         v.panX = px - cx * v.cell; v.panY = py - cy * v.cell;
       } else {
         v.panX -= e.deltaX; v.panY -= e.deltaY;
@@ -325,7 +325,7 @@ export function useDesignCanvas(opts: UseDesignCanvasOptions): DesignCanvasApi {
       const v = viewRef.current;
       // world point under the gesture's start midpoint stays pinned to the live midpoint
       const cx = (d.x - d.panX) / d.cell, cy = (d.y - d.panY) / d.cell;
-      v.cell = Math.max(8, Math.min(72, d.cell * (pinchDist(e) / d.d)));
+      v.cell = Math.max(E.MIN_CELL, Math.min(72, d.cell * (pinchDist(e) / d.d)));
       v.panX = mx - cx * v.cell;
       v.panY = my - cy * v.cell;
       redraw(); setViewTick((t) => t + 1);

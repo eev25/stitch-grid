@@ -8,6 +8,7 @@ import {
   buildSequence,
   computeWorkingArea,
   fitCell,
+  MIN_CELL,
   unionWithCells,
   contrastInk,
   isLight,
@@ -163,8 +164,12 @@ describe("fitCell", () => {
     expect(fitCell(area, 1000, 400, 30)).toBe(22); // 400 / 18 = 22.2
   });
 
-  it("never goes below the 8px zoom floor", () => {
-    expect(fitCell(area, 50, 50, 30)).toBe(8);
+  it("zooms out past the old 8px floor for large areas", () => {
+    expect(fitCell(area, 90, 90, 30)).toBe(5); // 90 / 18 = 5
+  });
+
+  it("never goes below the MIN_CELL zoom floor", () => {
+    expect(fitCell(area, 20, 20, 30)).toBe(MIN_CELL);
   });
 });
 

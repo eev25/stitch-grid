@@ -54,12 +54,15 @@ export function computeWorkingArea(cells: Cells): Area | null {
   return { x0: minX, y0: minY, x1: maxX, y1: maxY };
 }
 
-// Largest whole-px cell size (<= maxCell, >= 8) at which `area` plus a
+/** Smallest on-screen cell size (CSS px) any zoom or fit may reach. */
+export const MIN_CELL = 2;
+
+// Largest whole-px cell size (<= maxCell, >= MIN_CELL) at which `area` plus a
 // one-cell margin on every side fits a w x h canvas.
 export function fitCell(area: Area, w: number, h: number, maxCell: number): number {
   const cols = area.x1 - area.x0 + 3;
   const rows = area.y1 - area.y0 + 3;
-  return Math.max(8, Math.min(maxCell, Math.floor(Math.min(w / cols, h / rows))));
+  return Math.max(MIN_CELL, Math.min(maxCell, Math.floor(Math.min(w / cols, h / rows))));
 }
 
 // ---- turned-row stitch sequence ----

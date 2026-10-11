@@ -196,6 +196,33 @@ test.describe("Crochet Pattern Designer", () => {
     expect(await stitchOf()).toMatchObject({ rotation: 90, flipped: true });
   });
 
+  test("Ctrl/Cmd+Z in Stitching Mode un-stitches instead of undoing pattern edits", async ({ page }) => {
+    await page.goto("/");
+    await expect.poll(async () => (await readStore(page)) !== null, { timeout: 2000 }).toBe(true);
+    const cellsBefore = (await readStore(page))!.cells;
+
+    // Paint the (empty) center cell so there is a pattern edit on the design undo stack.
+    const canvas = page.locator("canvas");
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error("canvas has no bounding box");
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect.poll(async () => (await readStore(page))?.cells, { timeout: 2000 }).not.toEqual(cellsBefore);
+    const cellsAfterEdit = (await readStore(page))!.cells;
+
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: "Next" }).click();
+    await expect.poll(async () => (await readStore(page))?.stitch?.pointer, { timeout: 2000 }).toBe(2);
+
+    await page.keyboard.press("ControlOrMeta+z");
+    await expect.poll(async () => (await readStore(page))?.stitch?.pointer, { timeout: 2000 }).toBe(1);
+    await page.keyboard.press("ControlOrMeta+Shift+z");
+    await page.waitForTimeout(400);
+    const after = (await readStore(page))!;
+    expect(after.stitch?.pointer).toBe(1);
+    expect(after.cells).toEqual(cellsAfterEdit);
+  });
+
   test("Set as background swaps a swatch with the background", async ({ page }) => {
     await page.goto("/");
 

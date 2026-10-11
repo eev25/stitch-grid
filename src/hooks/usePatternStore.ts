@@ -293,25 +293,6 @@ export function usePatternStore(): PatternStore {
   const canUndo = history.past.length > 0;
   const canRedo = history.future.length > 0;
 
-  // ---------- keyboard shortcuts ----------
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const target = e.target as HTMLElement | null;
-      if (target && target.tagName === "INPUT") return;
-      const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        if (e.shiftKey) doRedo(); else doUndo();
-      } else if (topView === "design") {
-        if (e.key === "b" || e.key === "p") setTool("pencil");
-        else if (e.key === "e") setTool("eraser");
-        else if (e.key === "g") setTool("bucket");
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [doUndo, doRedo, topView]);
-
   // ---------- palette ops ----------
   // "bg" is the fixed sentinel id for the background swatch (see defaultBg).
   const updateSwatch = useCallback((sw: Swatch) => {
@@ -426,6 +407,28 @@ export function usePatternStore(): PatternStore {
     }
     setDialog(null);
   }, [dialog]);
+
+  // ---------- keyboard shortcuts ----------
+  // In Stitching Mode, Ctrl+Z matches the Undo button (un-stitch) and
+  // Ctrl+Shift+Z does nothing: pattern edits there would silently change the board.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && target.tagName === "INPUT") return;
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (topView === "stitching") { if (!e.shiftKey) stitchUndo(); }
+        else if (e.shiftKey) doRedo(); else doUndo();
+      } else if (topView === "design") {
+        if (e.key === "b" || e.key === "p") setTool("pencil");
+        else if (e.key === "e") setTool("eraser");
+        else if (e.key === "g") setTool("bucket");
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [doUndo, doRedo, stitchUndo, topView]);
 
   // ---------- uploaded image ----------
   const detachImage = useCallback(() => {

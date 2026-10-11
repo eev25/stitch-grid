@@ -191,6 +191,24 @@ export function Exit(p: IconProps) {
   );
 }
 
+export function Rotate(p: IconProps) {
+  return (
+    <S {...p}>
+      <path d="M20.8 5.2v5.2H16" />
+      <path d="M18.8 14.4a7.2 7.2 0 1 1-1.7-7.5l3.7 3.5" />
+    </S>
+  );
+}
+
+export function Flip(p: IconProps) {
+  return (
+    <S {...p}>
+      <path d="M4 8h15M15.5 4.5 19 8l-3.5 3.5" />
+      <path d="M20 16H5M8.5 12.5 5 16l3.5 3.5" />
+    </S>
+  );
+}
+
 export function Chevron(p: IconProps) {
   return (<S {...p}><path d="M9 6l6 6-6 6" /></S>);
 }

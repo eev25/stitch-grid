@@ -1,11 +1,16 @@
 /* ============================================================
    engine.test.ts — Vitest unit tests for the pure engine helpers
-   (src/engine/engine.ts): stitch sequencing, flood fill, line/rect
+   (src/engine/engine.ts): stitch sequencing (incl. rotate/flip),
+   flood fill, line/rect
    rasterization, working-area bbox math, and color contrast.
    ============================================================ */
 import { describe, it, expect } from "vitest";
 import {
   buildSequence,
+  stitchCount,
+  orientArea,
+  orientPoint,
+  orientCells,
   computeWorkingArea,
   fitCell,
   MIN_CELL,
@@ -17,6 +22,7 @@ import {
   rectCells,
   gridStroke,
 } from "../src/engine/engine";
+import type { Area, Rotation, WorldPoint } from "../src/types";
 
 describe("buildSequence", () => {
   it("orders a 2x2 area in turned rows starting from the bottom row, left-to-right", () => {
@@ -45,6 +51,107 @@ describe("buildSequence", () => {
       { x: 1, y: 0 },
       { x: 2, y: 0 },
     ]);
+  });
+});
+
+describe("buildSequence (flipped)", () => {
+  it("starts row 1 at the bottom-right, running right-to-left, then turns", () => {
+    const seq = buildSequence({ x0: 0, y0: 0, x1: 1, y1: 1 }, true);
+    expect(seq).toEqual([
+      { x: 1, y: 1 }, // row 1 (bottom): right -> left
+      { x: 0, y: 1 },
+      { x: 0, y: 0 }, // row 2: left -> right
+      { x: 1, y: 0 },
+    ]);
+  });
+});
+
+describe("stitchCount", () => {
+  it("counts the cells of an inclusive area", () => {
+    expect(stitchCount({ x0: -1, y0: 2, x1: 2, y1: 3 })).toBe(8);
+  });
+});
+
+describe("rotated stitching frame", () => {
+  // 3 wide x 2 tall, away from the origin:
+  //   A B C     (y = 5)
+  //   D E F     (y = 6)
+  const sel: Area = { x0: 4, y0: 5, x1: 6, y1: 6 };
+  const cells = {
+    "4,5": "A", "5,5": "B", "6,5": "C",
+    "4,6": "D", "5,6": "E", "6,6": "F",
+  };
+  const ROTATIONS: Rotation[] = [0, 90, 180, 270];
+
+  /** Frame rows top-to-bottom, as letters. */
+  function rows(rotation: Rotation): string[] {
+    const f = orientArea(sel, rotation);
+    const fc = orientCells(cells, sel, rotation);
+    const out: string[] = [];
+    for (let y = f.y0; y <= f.y1; y++) {
+      let row = "";
+      for (let x = f.x0; x <= f.x1; x++) row += fc[`${x},${y}`] ?? ".";
+      out.push(row);
+    }
+    return out;
+  }
+
+  it("keeps the frame anchored at the area's top-left, swapping width and height at 90/270", () => {
+    expect(orientArea(sel, 0)).toEqual(sel);
+    expect(orientArea(sel, 90)).toEqual({ x0: 4, y0: 5, x1: 5, y1: 7 });
+    expect(orientArea(sel, 180)).toEqual(sel);
+    expect(orientArea(sel, 270)).toEqual({ x0: 4, y0: 5, x1: 5, y1: 7 });
+  });
+
+  it("turns the cells clockwise", () => {
+    expect(rows(0)).toEqual(["ABC", "DEF"]);
+    expect(rows(90)).toEqual(["DA", "EB", "FC"]);
+    expect(rows(180)).toEqual(["FED", "CBA"]);
+    expect(rows(270)).toEqual(["CF", "BE", "AD"]);
+  });
+
+  it("ignores cells outside the area", () => {
+    const fc = orientCells({ ...cells, "0,0": "Z" }, sel, 90);
+    expect(Object.values(fc)).not.toContain("Z");
+    expect(Object.keys(fc)).toHaveLength(6);
+  });
+
+  it("maps every cell of the area to a distinct frame cell", () => {
+    for (const r of ROTATIONS) {
+      const f = orientArea(sel, r);
+      const seen = new Set<string>();
+      for (let y = sel.y0; y <= sel.y1; y++) {
+        for (let x = sel.x0; x <= sel.x1; x++) {
+          const p = orientPoint(x, y, sel, r);
+          expect(p.x).toBeGreaterThanOrEqual(f.x0);
+          expect(p.x).toBeLessThanOrEqual(f.x1);
+          expect(p.y).toBeGreaterThanOrEqual(f.y0);
+          expect(p.y).toBeLessThanOrEqual(f.y1);
+          seen.add(`${p.x},${p.y}`);
+        }
+      }
+      expect(seen.size).toBe(stitchCount(sel));
+    }
+  });
+
+  /** The stitch order for a rotation/flip, as letters of the original pattern. */
+  function order(rotation: Rotation, flipped: boolean): string {
+    const fc = orientCells(cells, sel, rotation);
+    return buildSequence(orientArea(sel, rotation), flipped).map((p: WorldPoint) => fc[`${p.x},${p.y}`]).join("");
+  }
+
+  it("starts at the bottom-left of the board as shown, or bottom-right when flipped", () => {
+    expect(order(0, false)).toBe("DEFCBA");  // bottom-left, along rows
+    expect(order(0, true)).toBe("FEDABC");   // bottom-right, along rows
+    expect(order(90, false)).toBe("FCBEDA"); // bottom-right, up columns
+    expect(order(180, false)).toBe("CBADEF"); // top-right, along rows
+    expect(order(270, false)).toBe("ADEBCF"); // top-left, down columns
+  });
+
+  it("gives 8 distinct stitch orders across rotate x flip", () => {
+    const all = ROTATIONS.flatMap((r) => [order(r, false), order(r, true)]);
+    expect(new Set(all).size).toBe(8);
+    for (const o of all) expect([...o].sort().join("")).toBe("ABCDEF");
   });
 });
 

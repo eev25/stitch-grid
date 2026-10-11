@@ -1,6 +1,7 @@
 /* ============================================================
-   Dialog — "new pattern" (destructive) and "new session"
-   (confirm) modal dialogs, plus the shared DialogFrame that
+   Dialog — "new pattern" (destructive), "new session" and
+   "reorder" (rotate/flip that clears stitching progress)
+   confirm modal dialogs, plus the shared DialogFrame that
    other dialogs (e.g. UploadDialog) are built on.
    ============================================================ */
 import type { ReactNode } from "react";
@@ -14,6 +15,7 @@ export interface DialogProps {
   onCancel: () => void;
   onNewPattern: () => void;
   onNewSession: () => void;
+  onReorder: () => void;
 }
 
 export interface DialogFrameProps {
@@ -36,7 +38,7 @@ export function DialogFrame({ onCancel, wide, label, children }: DialogFrameProp
   );
 }
 
-export function Dialog({ dialog, onCancel, onNewPattern, onNewSession }: DialogProps) {
+export function Dialog({ dialog, onCancel, onNewPattern, onNewSession, onReorder }: DialogProps) {
   if (dialog.type === "new") {
     return (
       <DialogFrame onCancel={onCancel}>
@@ -59,6 +61,25 @@ export function Dialog({ dialog, onCancel, onNewPattern, onNewSession }: DialogP
         <div className={styles.dialogActions}>
           <button className={`${controls.btn} ${controls.btnGhost}`} onClick={onCancel}>Cancel</button>
           <button className={`${controls.btn} ${controls.btnPrimary}`} onClick={onNewSession}>Start new session</button>
+        </div>
+      </DialogFrame>
+    );
+  }
+  if (dialog.type === "reorder") {
+    const rotate = dialog.change === "rotate";
+    return (
+      <DialogFrame onCancel={onCancel}>
+        <div className={styles.dialogIcon}>{rotate ? <Icons.Rotate size={22} /> : <Icons.Flip size={22} />}</div>
+        <h2>Change stitch order?</h2>
+        <p>
+          You've stitched {dialog.stitched} of {dialog.total}. {rotate ? "Rotating the pattern" : "Flipping the row direction"} changes
+          the stitch order, so your progress will be cleared.
+        </p>
+        <div className={styles.dialogActions}>
+          <button className={`${controls.btn} ${controls.btnGhost}`} onClick={onCancel}>Cancel</button>
+          <button className={`${controls.btn} ${controls.btnPrimary}`} onClick={onReorder}>
+            {rotate ? "Rotate & reset" : "Flip & reset"}
+          </button>
         </div>
       </DialogFrame>
     );

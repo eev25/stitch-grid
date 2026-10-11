@@ -1,7 +1,7 @@
 /* ============================================================
    Dialog.module.css
    Modal dialogs ("new pattern" destructive confirm,
-   "new session" confirm).
+   "new session" and "reorder" confirms).
    ============================================================ */
 
 .dialogBackdrop {

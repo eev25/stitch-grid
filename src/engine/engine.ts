@@ -3,7 +3,7 @@
    Framework-agnostic: no React, no DOM globals beyond canvas/CSS.
    ============================================================ */
 
-import type { Area, Cells, HandleDef, View, WorldPoint } from "../types";
+import type { Area, Cells, HandleDef, Rotation, View, WorldPoint } from "../types";
 
 export const key = (x: number, y: number): string => x + "," + y;
 
@@ -67,19 +67,62 @@ export function fitCell(area: Area, w: number, h: number, maxCell: number): numb
 
 // ---- turned-row stitch sequence ----
 // sel: {x0,y0,x1,y1} inclusive world cells. Row 1 = bottom (max y).
-// odd rows (1st from bottom) left->right, even rows right->left.
-export function buildSequence(sel: Area): WorldPoint[] {
+// odd rows (1st from bottom) left->right, even rows right->left;
+// `flipped` reverses both, so row 1 starts bottom-right.
+export function buildSequence(sel: Area, flipped = false): WorldPoint[] {
   const seq: WorldPoint[] = [];
   const { x0, y0, x1, y1 } = sel;
   for (let r = y1; r >= y0; r--) {
     const fromBottom = y1 - r; // 0-based
-    if (fromBottom % 2 === 0) {
+    if ((fromBottom % 2 === 0) !== flipped) {
       for (let c = x0; c <= x1; c++) seq.push({ x: c, y: r });
     } else {
       for (let c = x1; c >= x0; c--) seq.push({ x: c, y: r });
     }
   }
   return seq;
+}
+
+/** Number of stitches in an area. */
+export const stitchCount = (sel: Area): number => (sel.x1 - sel.x0 + 1) * (sel.y1 - sel.y0 + 1);
+
+// ---- rotated stitching frame ----
+// Stitching Mode can turn the board clockwise. The rotated board is drawn as a
+// "frame": an area anchored at sel's top-left (width/height swapped at 90/270)
+// with the cells moved into it, so sequencing and drawing need no rotation.
+
+/** The area `sel` occupies once turned `rotation` degrees clockwise. */
+export function orientArea(sel: Area, rotation: Rotation): Area {
+  const w = sel.x1 - sel.x0 + 1, h = sel.y1 - sel.y0 + 1;
+  const [fw, fh] = rotation % 180 === 0 ? [w, h] : [h, w];
+  return { x0: sel.x0, y0: sel.y0, x1: sel.x0 + fw - 1, y1: sel.y0 + fh - 1 };
+}
+
+/** Where world cell (x, y) of `sel` lands in the frame turned `rotation` degrees clockwise. */
+export function orientPoint(x: number, y: number, sel: Area, rotation: Rotation): WorldPoint {
+  const u = x - sel.x0, v = y - sel.y0;
+  const w = sel.x1 - sel.x0 + 1, h = sel.y1 - sel.y0 + 1;
+  const [fu, fv] =
+    rotation === 90 ? [h - 1 - v, u]
+    : rotation === 180 ? [w - 1 - u, h - 1 - v]
+    : rotation === 270 ? [v, w - 1 - u]
+    : [u, v];
+  return { x: sel.x0 + fu, y: sel.y0 + fv };
+}
+
+/** The cells inside `sel`, moved into the frame turned `rotation` degrees clockwise. */
+export function orientCells(cells: Cells, sel: Area, rotation: Rotation): Cells {
+  if (rotation === 0) return cells;
+  const out: Cells = {};
+  for (let y = sel.y0; y <= sel.y1; y++) {
+    for (let x = sel.x0; x <= sel.x1; x++) {
+      const col = cells[key(x, y)];
+      if (!col) continue;
+      const p = orientPoint(x, y, sel, rotation);
+      out[key(p.x, p.y)] = col;
+    }
+  }
+  return out;
 }
 
 // ---- coordinate transform ----

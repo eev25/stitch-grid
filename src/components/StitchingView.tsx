@@ -1,24 +1,29 @@
 /* ============================================================
    StitchingView — Stitching Mode: bounded canvas with guided
-   turned-row Next/Undo controls.
+   turned-row Next/Undo controls, and rotate / flip-row-direction
+   buttons that change where the stitch order starts.
    ============================================================ */
 import { useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import * as E from "../engine/engine";
 import * as Icons from "../icons/icons";
 import { isTouchEvent, localPt, pinchDist, type CanvasPointerEvent } from "../hooks/canvasPointer";
-import type { Area, Cells, View, WorldPoint } from "../types";
+import type { Area, Cells, Reorder, Rotation, View, WorldPoint } from "../types";
 import controls from "../styles/controls.module.css";
 import styles from "./Stitching.module.css";
 
 export interface StitchingViewProps {
+  /** Board area, cells, and stitch order, all in the rotated frame. */
   sel: Area;
   seq: WorldPoint[];
   pointer: number;
   cells: Cells;
   bg: string;
+  rotation: Rotation;
+  flipped: boolean;
   onNext: () => void;
   onUndo: () => void;
   onExit: () => void;
+  onReorder: (change: Reorder) => void;
 }
 
 /** CSS custom-property style object (for --next-bg / --next-fg tinting). */
@@ -29,7 +34,7 @@ type StitchDragState =
   | { type: "pinch"; d: number; x: number; y: number; cell: number; panX: number; panY: number };
 
 export function StitchingView(props: StitchingViewProps) {
-  const { sel, seq, pointer, cells, bg, onNext, onUndo, onExit } = props;
+  const { sel, seq, pointer, cells, bg, rotation, flipped, onNext, onUndo, onExit, onReorder } = props;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 34 });
@@ -118,6 +123,19 @@ export function StitchingView(props: StitchingViewProps) {
 
   // recenter when the stitch pointer changes
   const prevPointer = useRef(pointer);
+
+  // After a rotate/flip, reframe like Home: the new board shape, centered on
+  // the (new) current stitch. This also covers the pointer reset to 0.
+  const orientation = `${rotation}:${flipped}`;
+  const prevOrientation = useRef(orientation);
+  useEffect(() => {
+    if (prevOrientation.current === orientation) return;
+    prevOrientation.current = orientation;
+    prevPointer.current = pointer;
+    centerOn(pointer, true);
+    redraw();
+  }, [orientation, pointer, centerOn, redraw]);
+
   useEffect(() => {
     if (prevPointer.current !== pointer) {
       ensureVisible(pointer);
@@ -225,6 +243,15 @@ export function StitchingView(props: StitchingViewProps) {
             <Icons.Check size={16} /> Pattern complete
           </span>
         )}
+        <button className={`${controls.iconbtn} ${controls.bordered} ${styles.flipBtn}`}
+          onClick={() => onReorder("flip")} aria-pressed={flipped} aria-label="Flip row direction"
+          title={flipped ? "First row: right to left" : "First row: left to right"}>
+          <Icons.Flip size={20} />
+        </button>
+        <button className={`${controls.iconbtn} ${controls.bordered}`}
+          onClick={() => onReorder("rotate")} aria-label="Rotate pattern" title="Rotate pattern 90°">
+          <Icons.Rotate size={20} />
+        </button>
       </header>
 
       <div className={styles.stitchCanvasWrap}>

@@ -1,8 +1,8 @@
 /* ============================================================
    designer.spec.ts — Playwright e2e flows for the Crochet Pattern
    Designer: initial load, painting + persistence, and the guided
-   Stitching Mode (Begin -> Next -> Undo), plus the New Pattern
-   reset dialog.
+   Stitching Mode (Begin -> Next -> Undo, rotate / flip row
+   direction), plus the New Pattern reset dialog.
    ============================================================ */
 import { test, expect, type Page } from "@playwright/test";
 
@@ -20,6 +20,7 @@ interface PersistedShape {
   activeId: string;
   cells: Record<string, string>;
   area: { x0: number; y0: number; x1: number; y1: number } | null;
+  stitch: { pointer: number; rotation: number; flipped: boolean } | null;
 }
 
 async function readStore(page: Page): Promise<PersistedShape | null> {
@@ -150,6 +151,49 @@ test.describe("Crochet Pattern Designer", () => {
 
     await recenter.click();
     expect((await shot()).equals(initial)).toBe(true);
+  });
+
+  test("Rotate and flip in Stitching Mode change the stitch order, asking before clearing progress", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    const stitchOf = async () => (await readStore(page))?.stitch;
+
+    const rotate = page.getByRole("button", { name: "Rotate pattern" });
+    const flip = page.getByRole("button", { name: "Flip row direction" });
+    const undo = page.getByRole("button", { name: "Undo" });
+    const dialog = page.getByRole("dialog");
+    await expect(flip).toHaveAttribute("aria-pressed", "false");
+
+    // No progress yet -> rotates straight away, no dialog.
+    await rotate.click();
+    await expect(dialog).toHaveCount(0);
+    await expect.poll(stitchOf, { timeout: 2000 }).toMatchObject({ rotation: 90, flipped: false, pointer: 0 });
+
+    // With progress -> asks first; Cancel leaves everything as it was.
+    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: "Next" }).click();
+    await expect.poll(stitchOf, { timeout: 2000 }).toMatchObject({ pointer: 2 });
+    await rotate.click();
+    await expect(dialog.getByText("Change stitch order?")).toBeVisible();
+    await expect(dialog.getByText(/You've stitched 2 of \d+/)).toBeVisible();
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(undo).toBeEnabled();
+    expect(await stitchOf()).toMatchObject({ rotation: 90, flipped: false, pointer: 2 });
+
+    // Flip with progress -> confirm clears progress and flips.
+    await flip.click();
+    await dialog.getByRole("button", { name: "Flip & reset" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(undo).toBeDisabled();
+    await expect(flip).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(stitchOf, { timeout: 2000 }).toMatchObject({ rotation: 90, flipped: true, pointer: 0 });
+
+    // The orientation is part of the session: it survives a reload.
+    await page.reload();
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    await expect(page.getByRole("button", { name: "Flip row direction" })).toHaveAttribute("aria-pressed", "true");
+    expect(await stitchOf()).toMatchObject({ rotation: 90, flipped: true });
   });
 
   test("Set as background swaps a swatch with the background", async ({ page }) => {

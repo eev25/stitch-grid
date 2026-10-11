@@ -39,10 +39,22 @@ export interface Swatch {
   label: string;
 }
 
-/** Active stitching session: selection + pointer (index of current stitch). */
+/** Clockwise turn of the board in Stitching Mode. */
+export type Rotation = 0 | 90 | 180 | 270;
+
+/** A stitching-mode change that reorders the stitches (and so resets progress). */
+export type Reorder = "rotate" | "flip";
+
+/**
+ * Active stitching session: selection + pointer (index of current stitch).
+ * The stitch order is built on the board turned `rotation` degrees, with
+ * row 1 running right->left when `flipped`. `sel` stays in world cells.
+ */
 export interface Stitch {
   sel: Area;
   pointer: number;
+  rotation: Rotation;
+  flipped: boolean;
 }
 
 export type Tool = "pencil" | "eraser" | "bucket" | "line" | "rect";
@@ -62,9 +74,10 @@ export interface EditorState {
 }
 
 /** Active modal dialog. */
-export interface DialogState {
-  type: "new" | "newsession";
-}
+export type DialogState =
+  | { type: "new" | "newsession" }
+  /** Confirm a rotate/flip that would clear `stitched` of `total` stitches. */
+  | { type: "reorder"; change: Reorder; stitched: number; total: number };
 
 /** Handle definition for working-area resize handles (8 points). */
 export interface HandleDef {

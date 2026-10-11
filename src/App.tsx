@@ -26,10 +26,11 @@ export function App() {
     seeded, bg, palette, activeId, setActiveId,
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, editor, setEditor, dialog, setDialog,
-    seq, activeColor, canBegin, canUndo, canRedo, editingSwatch,
+    frame, activeColor, canBegin, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
     updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder,
     beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo,
+    reorderStitching, confirmReorder,
     doNewPattern,
     image, imageSource, imageHidden, setImageHidden, canPixelate,
     attachImage, removeImage, pixelate,
@@ -67,11 +68,19 @@ export function App() {
     canvas.home();
   }
 
-  if (topView === "stitching" && stitch) {
+  const dialogEl = dialog && (
+    <Dialog dialog={dialog} onCancel={() => setDialog(null)}
+      onNewPattern={handleNewPattern} onNewSession={confirmNewSession} onReorder={confirmReorder} />
+  );
+
+  if (topView === "stitching" && stitch && frame) {
     return (
-      <StitchingView sel={stitch.sel} seq={seq} pointer={stitch.pointer}
-        cells={cells} bg={bg.color}
-        onNext={stitchNext} onUndo={stitchUndo} onExit={exitStitching} />
+      <>
+        <StitchingView sel={frame.sel} seq={frame.seq} pointer={stitch.pointer}
+          cells={frame.cells} bg={bg.color} rotation={stitch.rotation} flipped={stitch.flipped}
+          onNext={stitchNext} onUndo={stitchUndo} onExit={exitStitching} onReorder={reorderStitching} />
+        {dialogEl}
+      </>
     );
   }
 
@@ -133,10 +142,7 @@ export function App() {
           onClose={() => setEditor(null)} />
       )}
 
-      {dialog && (
-        <Dialog dialog={dialog} onCancel={() => setDialog(null)}
-          onNewPattern={handleNewPattern} onNewSession={confirmNewSession} />
-      )}
+      {dialogEl}
 
       {uploadFile && (
         <UploadDialog file={uploadFile} palette={palette}

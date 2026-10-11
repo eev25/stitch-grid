@@ -13,7 +13,7 @@ import { decodeImage, readPixels } from "../lib/imageFile";
 import { deleteImageBlob, getImageBlob, pruneImageBlobs } from "../lib/imageStore";
 import type {
   Area, AreaImage, Cells, DialogState, EditorState, HistoryState,
-  PersistedState, Stitch, Swatch, Tool, TopView, WorldPoint,
+  PersistedState, Reorder, Rotation, Stitch, Swatch, Tool, TopView, WorldPoint,
 } from "../types";
 
 const STORE_KEY = "crochet-designer-v2";
@@ -70,7 +70,8 @@ function loadState(): InitState {
           activeId: s.activeId ?? s.bg.id,
           cells: s.cells ?? {},
           area: area ?? null,
-          stitch: s.stitch ?? null,
+          // (sessions saved before rotate/flip existed are upright)
+          stitch: s.stitch ? { ...s.stitch, rotation: s.stitch.rotation ?? 0, flipped: s.stitch.flipped ?? false } : null,
           tool: s.tool ?? "pencil",
           // (an image saved before swatch colors were stored is dropped)
           image: s.image?.swatches ? s.image : null,
@@ -86,6 +87,22 @@ function loadState(): InitState {
 
 const sameSel = (a: Area | null, b: Area | null): boolean =>
   !!a && !!b && a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1;
+
+/** A fresh stitching session on `area`: upright, row 1 left->right. */
+const newStitch = (area: Area): Stitch => ({ sel: { ...area }, pointer: 0, rotation: 0, flipped: false });
+
+/** `s` turned another 90 degrees clockwise or row-flipped, with progress cleared. */
+const reordered = (s: Stitch, change: Reorder): Stitch =>
+  change === "rotate"
+    ? { ...s, pointer: 0, rotation: ((s.rotation + 90) % 360) as Rotation }
+    : { ...s, pointer: 0, flipped: !s.flipped };
+
+/** The stitching board as drawn: area, cells, and stitch order in the rotated frame. */
+export interface StitchFrame {
+  sel: Area;
+  cells: Cells;
+  seq: WorldPoint[];
+}
 
 /** What the upload dialog hands over when the user adds an image. */
 export interface ImageUpload {
@@ -131,7 +148,8 @@ export interface PatternStore {
   /** Pixelate is possible: the image is loaded and some of its swatches still exist. */
   canPixelate: boolean;
 
-  seq: WorldPoint[];
+  /** The stitching board; null outside Stitching Mode. */
+  frame: StitchFrame | null;
   activeColor: string;
   canBegin: boolean;
   canUndo: boolean;
@@ -155,6 +173,9 @@ export interface PatternStore {
   exitStitching: () => void;
   stitchNext: () => void;
   stitchUndo: () => void;
+  /** Rotate/flip the stitch order, asking first if that would clear progress. */
+  reorderStitching: (change: Reorder) => void;
+  confirmReorder: () => void;
 
   doNewPattern: () => void;
 
@@ -191,7 +212,20 @@ export function usePatternStore(): PatternStore {
   const imageRef = useRef(image);
   imageRef.current = image;
 
-  const seq = useMemo(() => (stitch ? E.buildSequence(stitch.sel) : []), [stitch]);
+  // Keyed on the session's fields (not `stitch`) so Next/Undo keep the same
+  // seq; only built while stitching, so design-mode paint strokes skip it.
+  const stitchSel = stitch?.sel ?? null;
+  const rotation = stitch?.rotation ?? 0;
+  const flipped = stitch?.flipped ?? false;
+  const stitching = topView === "stitching" && !!stitchSel;
+  const frameSel = useMemo(() => (stitchSel ? E.orientArea(stitchSel, rotation) : null), [stitchSel, rotation]);
+  const seq = useMemo(() => (frameSel ? E.buildSequence(frameSel, flipped) : []), [frameSel, flipped]);
+  const frameCells = useMemo(
+    () => (stitching && stitchSel ? E.orientCells(cells, stitchSel, rotation) : null),
+    [stitching, cells, stitchSel, rotation]);
+  const frame = useMemo(
+    () => (frameSel && frameCells ? { sel: frameSel, cells: frameCells, seq } : null),
+    [frameSel, frameCells, seq]);
 
   const activeColor = useMemo(() => {
     if (activeId === bg.id) return bg.color;
@@ -347,14 +381,14 @@ export function usePatternStore(): PatternStore {
     if (stitch && sameSel(stitch.sel, area)) {
       setTopView("stitching");
     } else {
-      setStitch({ sel: { ...area }, pointer: 0 });
+      setStitch(newStitch(area));
       setTopView("stitching");
     }
   }, [area, stitch]);
 
   const confirmNewSession = useCallback(() => {
     if (!area) { setDialog(null); return; }
-    setStitch({ sel: { ...area }, pointer: 0 });
+    setStitch(newStitch(area));
     setTopView("stitching");
     setDialog(null);
   }, [area]);
@@ -366,12 +400,32 @@ export function usePatternStore(): PatternStore {
   }, []);
 
   const stitchNext = useCallback(() => {
-    setStitch((s) => (s && s.pointer < E.buildSequence(s.sel).length ? { ...s, pointer: s.pointer + 1 } : s));
+    setStitch((s) => (s && s.pointer < E.stitchCount(s.sel) ? { ...s, pointer: s.pointer + 1 } : s));
   }, []);
 
   const stitchUndo = useCallback(() => {
     setStitch((s) => (s && s.pointer > 0 ? { ...s, pointer: s.pointer - 1 } : s));
   }, []);
+
+  // Rotating or flipping changes the stitch order, so done stitches are no
+  // longer a prefix of it: progress can't carry over and is cleared.
+  const reorderStitching = useCallback((change: Reorder) => {
+    const s = stitchRef.current;
+    if (!s) return;
+    if (s.pointer > 0) {
+      setDialog({ type: "reorder", change, stitched: s.pointer, total: E.stitchCount(s.sel) });
+      return;
+    }
+    setStitch(reordered(s, change));
+  }, []);
+
+  const confirmReorder = useCallback(() => {
+    if (dialog?.type === "reorder") {
+      const { change } = dialog;
+      setStitch((s) => (s ? reordered(s, change) : s));
+    }
+    setDialog(null);
+  }, [dialog]);
 
   // ---------- uploaded image ----------
   const detachImage = useCallback(() => {
@@ -432,10 +486,11 @@ export function usePatternStore(): PatternStore {
     cells, setCells, area, setArea, stitch, tool, setTool,
     topView, setTopView, editor, setEditor, dialog, setDialog,
     image, imageSource, imageHidden, setImageHidden, canPixelate,
-    seq, activeColor, canBegin: !!area, canUndo, canRedo, editingSwatch,
+    frame, activeColor, canBegin: !!area, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
     updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder, pickColorAt,
     beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo,
+    reorderStitching, confirmReorder,
     doNewPattern,
     attachImage, removeImage, pixelate,
   };

@@ -86,6 +86,18 @@ export function buildSequence(sel: Area, flipped = false): WorldPoint[] {
 /** Number of stitches in an area. */
 export const stitchCount = (sel: Area): number => (sel.x1 - sel.x0 + 1) * (sel.y1 - sel.y0 + 1);
 
+/** Pointer after marking the rest of the current row done (start of the next row). */
+export function completeRowPointer(sel: Area, pointer: number): number {
+  const width = sel.x1 - sel.x0 + 1;
+  return Math.min(stitchCount(sel), (Math.floor(pointer / width) + 1) * width);
+}
+
+/** Pointer after un-doing the current row: its start, or the previous row's if already there. */
+export function uncompleteRowPointer(sel: Area, pointer: number): number {
+  const width = sel.x1 - sel.x0 + 1;
+  return Math.max(0, (Math.ceil(pointer / width) - 1) * width);
+}
+
 // ---- rotated stitching frame ----
 // Stitching Mode can turn the board clockwise. The rotated board is drawn as a
 // "frame": an area anchored at sel's top-left (width/height swapped at 90/270)

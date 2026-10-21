@@ -217,6 +217,10 @@ export function ChevronUp(p: IconProps) {
   return (<S {...p}><path d="M6 15l6-6 6 6" /></S>);
 }
 
+export function ChevronDown(p: IconProps) {
+  return (<S {...p}><path d="M6 9l6 6 6-6" /></S>);
+}
+
 // Uploaded image
 export function Picture(p: IconProps) {
   return (

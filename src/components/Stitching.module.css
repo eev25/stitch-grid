@@ -63,6 +63,8 @@
   color: var(--ink-soft);
   transition: background .12s, color .12s;
 }
+.canvasOverlay button + button { border-top: 1px solid var(--line-soft); }
+.canvasOverlay button:disabled { opacity: .4; pointer-events: none; }
 .canvasOverlay button:hover { background: var(--paper-2); color: var(--ink); }
 .canvasOverlay button:active { background: var(--line-soft); }
 

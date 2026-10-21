@@ -196,6 +196,34 @@ test.describe("Crochet Pattern Designer", () => {
     expect(await stitchOf()).toMatchObject({ rotation: 90, flipped: true });
   });
 
+  test("Mark row complete / uncomplete jump the stitch pointer by whole rows", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    const stitchOf = async () => (await readStore(page))?.stitch as
+      { pointer: number; sel: { x0: number; x1: number } } | undefined;
+    await expect.poll(stitchOf, { timeout: 2000 }).toBeTruthy();
+    const { sel } = (await stitchOf())!;
+    const width = sel.x1 - sel.x0 + 1;
+
+    const complete = page.getByRole("button", { name: "Mark row complete" });
+    const uncomplete = page.getByRole("button", { name: "Mark row uncomplete" });
+    await expect(uncomplete).toBeDisabled();
+
+    // Partway through row 1 -> finishes it.
+    await page.getByRole("button", { name: "Next" }).click();
+    await complete.click();
+    await expect.poll(async () => (await stitchOf())?.pointer, { timeout: 2000 }).toBe(width);
+
+    // At a row start, uncomplete steps back a whole row; then it's disabled again.
+    await complete.click();
+    await expect.poll(async () => (await stitchOf())?.pointer, { timeout: 2000 }).toBe(2 * width);
+    await uncomplete.click();
+    await expect.poll(async () => (await stitchOf())?.pointer, { timeout: 2000 }).toBe(width);
+    await uncomplete.click();
+    await expect.poll(async () => (await stitchOf())?.pointer, { timeout: 2000 }).toBe(0);
+    await expect(uncomplete).toBeDisabled();
+  });
+
   test("Ctrl/Cmd+Z in Stitching Mode un-stitches instead of undoing pattern edits", async ({ page }) => {
     await page.goto("/");
     await expect.poll(async () => (await readStore(page)) !== null, { timeout: 2000 }).toBe(true);

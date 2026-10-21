@@ -8,6 +8,8 @@ import { describe, it, expect } from "vitest";
 import {
   buildSequence,
   stitchCount,
+  completeRowPointer,
+  uncompleteRowPointer,
   orientArea,
   orientPoint,
   orientCells,
@@ -69,6 +71,35 @@ describe("buildSequence (flipped)", () => {
 describe("stitchCount", () => {
   it("counts the cells of an inclusive area", () => {
     expect(stitchCount({ x0: -1, y0: 2, x1: 2, y1: 3 })).toBe(8);
+  });
+});
+
+describe("row completion pointers", () => {
+  // 3 wide x 2 tall -> 6 stitches, rows start at pointer 0 and 3
+  const sel = { x0: 4, y0: 1, x1: 6, y1: 2 };
+
+  it("completeRowPointer jumps to the start of the next row", () => {
+    expect(completeRowPointer(sel, 0)).toBe(3);
+    expect(completeRowPointer(sel, 1)).toBe(3);
+    expect(completeRowPointer(sel, 2)).toBe(3);
+    expect(completeRowPointer(sel, 3)).toBe(6);
+    expect(completeRowPointer(sel, 5)).toBe(6);
+  });
+
+  it("completeRowPointer stays at the end when the pattern is done", () => {
+    expect(completeRowPointer(sel, 6)).toBe(6);
+  });
+
+  it("uncompleteRowPointer goes to the current row's start, or the previous one's at a boundary", () => {
+    expect(uncompleteRowPointer(sel, 1)).toBe(0);
+    expect(uncompleteRowPointer(sel, 2)).toBe(0);
+    expect(uncompleteRowPointer(sel, 3)).toBe(0);
+    expect(uncompleteRowPointer(sel, 4)).toBe(3);
+    expect(uncompleteRowPointer(sel, 6)).toBe(3);
+  });
+
+  it("uncompleteRowPointer stays at 0 at the very start", () => {
+    expect(uncompleteRowPointer(sel, 0)).toBe(0);
   });
 });
 

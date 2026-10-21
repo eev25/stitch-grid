@@ -22,6 +22,8 @@ export interface StitchingViewProps {
   flipped: boolean;
   onNext: () => void;
   onUndo: () => void;
+  onCompleteRow: () => void;
+  onUncompleteRow: () => void;
   onExit: () => void;
   onReorder: (change: Reorder) => void;
 }
@@ -34,7 +36,7 @@ type StitchDragState =
   | { type: "pinch"; d: number; x: number; y: number; cell: number; panX: number; panY: number };
 
 export function StitchingView(props: StitchingViewProps) {
-  const { sel, seq, pointer, cells, bg, rotation, flipped, onNext, onUndo, onExit, onReorder } = props;
+  const { sel, seq, pointer, cells, bg, rotation, flipped, onNext, onUndo, onCompleteRow, onUncompleteRow, onExit, onReorder } = props;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 34 });
@@ -260,6 +262,10 @@ export function StitchingView(props: StitchingViewProps) {
           onMouseUp={onPointerUp} onMouseLeave={onPointerUp}
           onTouchStart={onPointerDown} onTouchMove={onPointerMove} onTouchEnd={onPointerUp} />
         <div className={styles.canvasOverlay}>
+          <button onClick={onCompleteRow} disabled={done}
+            title="Mark row complete" aria-label="Mark row complete"><Icons.ChevronUp size={20} /></button>
+          <button onClick={onUncompleteRow} disabled={pointer === 0}
+            title="Mark row uncomplete" aria-label="Mark row uncomplete"><Icons.ChevronDown size={20} /></button>
           <button onClick={recenter} title="Recenter on current stitch" aria-label="Recenter"><Icons.Home size={20} /></button>
         </div>
       </div>

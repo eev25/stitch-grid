@@ -339,6 +339,8 @@ export function drawStitching(ctx: CanvasRenderingContext2D, o: DrawStitchingOpt
 
   ctx.restore(); // unclip
 
+  drawDimensions(ctx, a, b, sel.x1 - sel.x0 + 1, sel.y1 - sel.y0 + 1);
+
   // current stitch outline (drawn over clip edge ok)
   if (pointer < seq.length) {
     const { x, y } = seq[pointer];
@@ -356,6 +358,28 @@ export function drawStitching(ctx: CanvasRenderingContext2D, o: DrawStitchingOpt
     ctx.strokeRect(p.sx + 1, p.sy + 1, v.cell - 2, v.cell - 2);
     ctx.restore();
   }
+}
+
+// Width label centered above the board's top edge and height label centered
+// beside its left edge, as seen in the (possibly rotated) stitching frame.
+// They are anchored to the board, so they pan and zoom with it but never
+// slide along the edge.
+function drawDimensions(
+  ctx: CanvasRenderingContext2D,
+  a: { sx: number; sy: number }, b: { sx: number; sy: number },
+  cols: number, rows: number,
+): void {
+  const gap = 16;
+  ctx.save();
+  ctx.font = `600 12px ${getCss("--font")}`;
+  ctx.fillStyle = getCss("--ink-soft");
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`${cols}`, (a.sx + b.sx) / 2, a.sy - gap);
+  ctx.translate(a.sx - gap, (a.sy + b.sy) / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(`${rows}`, 0, 0);
+  ctx.restore();
 }
 
 function drawCheck(ctx: CanvasRenderingContext2D, sx: number, sy: number, cell: number, color: string): void {

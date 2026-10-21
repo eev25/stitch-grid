@@ -175,6 +175,8 @@ export interface PatternStore {
   stitchUndo: () => void;
   stitchCompleteRow: () => void;
   stitchUncompleteRow: () => void;
+  /** Jump past the rest of the current color run (within its row). */
+  stitchSkip: () => void;
   /** Rotate/flip the stitch order, asking first if that would clear progress. */
   reorderStitching: (change: Reorder) => void;
   confirmReorder: () => void;
@@ -398,6 +400,12 @@ export function usePatternStore(): PatternStore {
     setStitch((s) => (s ? { ...s, pointer: E.uncompleteRowPointer(s.sel, s.pointer) } : s));
   }, []);
 
+  const bgColor = bg.color;
+  const stitchSkip = useCallback(() => {
+    if (!frame) return;
+    setStitch((s) => (s ? { ...s, pointer: E.runEndPointer(frame.sel, frame.seq, frame.cells, bgColor, s.pointer) } : s));
+  }, [frame, bgColor]);
+
   // Rotating or flipping changes the stitch order, so done stitches are no
   // longer a prefix of it: progress can't carry over and is cleared.
   const reorderStitching = useCallback((change: Reorder) => {
@@ -502,7 +510,7 @@ export function usePatternStore(): PatternStore {
     frame, activeColor, canBegin: !!area, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
     updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder, pickColorAt,
-    beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo, stitchCompleteRow, stitchUncompleteRow,
+    beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo, stitchCompleteRow, stitchUncompleteRow, stitchSkip,
     reorderStitching, confirmReorder,
     doNewPattern,
     attachImage, removeImage, pixelate,

@@ -29,7 +29,7 @@ export function App() {
     frame, activeColor, canBegin, canUndo, canRedo, editingSwatch,
     pushHistory, commitCells, doUndo, doRedo,
     updateSwatch, deleteSwatch, setAsBackground, addSwatch, reorder,
-    beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo, stitchCompleteRow, stitchUncompleteRow,
+    beginStitching, confirmNewSession, exitStitching, stitchNext, stitchUndo, stitchCompleteRow, stitchUncompleteRow, stitchSkip,
     reorderStitching, confirmReorder,
     doNewPattern,
     image, imageSource, imageHidden, setImageHidden, canPixelate,
@@ -78,7 +78,7 @@ export function App() {
       <>
         <StitchingView sel={frame.sel} seq={frame.seq} pointer={stitch.pointer}
           cells={frame.cells} bg={bg.color} rotation={stitch.rotation} flipped={stitch.flipped}
-          onNext={stitchNext} onUndo={stitchUndo}
+          onNext={stitchNext} onUndo={stitchUndo} onSkip={stitchSkip}
           onCompleteRow={stitchCompleteRow} onUncompleteRow={stitchUncompleteRow} onExit={exitStitching} onReorder={reorderStitching} />
         {dialogEl}
       </>

@@ -65,3 +65,22 @@ test("a tap near the bottom of the canvas paints the cell under the finger", asy
   }, [lx, ly]).then(([r, g, b]) => Math.max(Math.abs(r - er), Math.abs(g - eg), Math.abs(b - eb))))
     .toBeLessThanOrEqual(2);
 });
+
+test("Stitching Mode's Undo / Skip / Next bar fits the phone width", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Begin Stitching" }).click();
+  const undo = page.getByRole("button", { name: "Undo" });
+  const skip = page.getByRole("button", { name: /^Skip \d+ stitch/ });
+  const next = page.getByRole("button", { name: "Next" });
+  await expect(skip).toBeVisible();
+
+  const vw = page.viewportSize()!.width;
+  let prevRight = 0;
+  for (const btn of [undo, skip, next]) {
+    const box = (await btn.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(prevRight);
+    expect(box.x + box.width).toBeLessThanOrEqual(vw);
+    expect(box.width).toBeGreaterThan(40);
+    prevRight = box.x + box.width;
+  }
+});

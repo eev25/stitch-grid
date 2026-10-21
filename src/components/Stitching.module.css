@@ -110,10 +110,6 @@
 }
 .btnNext:hover { filter: brightness(1.05); }
 .btnNext:active { transform: translateY(1px); }
-.btnNext .yarnDot {
-  width: 16px; height: 16px; border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px oklch(1 0 0 / 0.5);
-}
 .btnNext.done {
   background: var(--paper-2);
   color: var(--ink-faint);
@@ -122,6 +118,14 @@
   cursor: default;
 }
 .btnNext.done:hover { filter: none; }
+
+/* Skip is styled as Next (btnNext supplies colors, shadow, done state); only its size differs. */
+.btnSkip {
+  flex: 0 0 auto;
+  min-width: 76px; padding: 0 16px;
+  gap: 6px;
+  font-size: 17px; font-variant-numeric: tabular-nums;
+}
 
 .stitchCompleteTag {
   display: inline-flex; align-items: center; gap: 7px;

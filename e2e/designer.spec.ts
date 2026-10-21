@@ -255,6 +255,31 @@ test.describe("Crochet Pattern Designer", () => {
     await expect(uncomplete).toBeDisabled();
   });
 
+  test("Skip jumps past the rest of the current color and never crosses a row", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    const stitchOf = async () => (await readStore(page))?.stitch as
+      { pointer: number; sel: { x0: number; x1: number } } | undefined;
+    await expect.poll(stitchOf, { timeout: 2000 }).toBeTruthy();
+    const { sel } = (await stitchOf())!;
+    const width = sel.x1 - sel.x0 + 1;
+
+    const skip = page.getByRole("button", { name: /^Skip \d+ stitch/ });
+    // Skip through row 1: each tap advances by exactly the count it showed,
+    // and the last one lands on the start of row 2, not past it.
+    let pointer = 0;
+    while (pointer < width) {
+      const label = await skip.getAttribute("aria-label");
+      const count = Number(label!.match(/\d+/)![0]);
+      expect(count).toBeGreaterThan(0);
+      await skip.click();
+      pointer += count;
+      expect(pointer).toBeLessThanOrEqual(width);
+      await expect.poll(async () => (await stitchOf())?.pointer, { timeout: 2000 }).toBe(pointer);
+    }
+    expect(pointer).toBe(width);
+  });
+
   test("Ctrl/Cmd+Z in Stitching Mode un-stitches instead of undoing pattern edits", async ({ page }) => {
     await page.goto("/");
     await expect.poll(async () => (await readStore(page)) !== null, { timeout: 2000 }).toBe(true);

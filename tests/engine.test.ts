@@ -10,6 +10,7 @@ import {
   stitchCount,
   completeRowPointer,
   uncompleteRowPointer,
+  runEndPointer,
   orientArea,
   orientPoint,
   orientCells,
@@ -100,6 +101,53 @@ describe("row completion pointers", () => {
 
   it("uncompleteRowPointer stays at 0 at the very start", () => {
     expect(uncompleteRowPointer(sel, 0)).toBe(0);
+  });
+});
+
+describe("runEndPointer", () => {
+  // 3 wide x 2 tall; row 1 (y=1) goes left->right, row 2 (y=0) right->left:
+  //   y=0:  P P R      stitched right->left: R P P
+  //   y=1:  R R R      stitched left->right: R R R
+  const sel: Area = { x0: 0, y0: 0, x1: 2, y1: 1 };
+  const cells = { "0,1": "R", "1,1": "R", "2,1": "R", "0,0": "P", "1,0": "P", "2,0": "R" };
+  const seq = buildSequence(sel);
+  const end = (pointer: number, c = cells, b = "bg") => runEndPointer(sel, seq, c, b, pointer);
+
+  it("ends at the first stitch of a different color", () => {
+    expect(end(3)).toBe(4); // R, then P
+    expect(end(4)).toBe(6); // P P to the end of the pattern
+  });
+
+  it("counts from the middle of a run", () => {
+    expect(end(5)).toBe(6);
+  });
+
+  it("stops at the row end even when the next row starts in the same color", () => {
+    // row 1 is all R and row 2 begins with R, but they are separate runs
+    expect(end(0)).toBe(3);
+    expect(end(1)).toBe(3);
+    expect(end(2)).toBe(3);
+  });
+
+  it("is a run of one for a lone stitch", () => {
+    expect(end(2, { ...cells, "2,1": "Q" })).toBe(3);
+    expect(end(2, { ...cells, "1,1": "Q" })).toBe(3);
+  });
+
+  it("treats empty cells as the background color", () => {
+    expect(end(0, {}, "bg")).toBe(3);
+    expect(end(0, { "0,1": "bg", "1,1": "bg" }, "bg")).toBe(3); // explicit bg == empty
+    expect(end(0, { "2,1": "R" }, "bg")).toBe(2);
+  });
+
+  it("stays at the end when the pattern is done", () => {
+    expect(end(6)).toBe(6);
+  });
+
+  it("follows a flipped sequence", () => {
+    const flipped = buildSequence(sel, true); // row 1 right->left, row 2 left->right
+    expect(runEndPointer(sel, flipped, cells, "bg", 3)).toBe(5); // P P
+    expect(runEndPointer(sel, flipped, cells, "bg", 5)).toBe(6); // R
   });
 });
 

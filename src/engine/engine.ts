@@ -98,6 +98,22 @@ export function uncompleteRowPointer(sel: Area, pointer: number): number {
   return Math.max(0, (Math.ceil(pointer / width) - 1) * width);
 }
 
+/**
+ * Pointer after the current color run: the first stitch past the consecutive
+ * same-color stitches starting at `pointer`. A run stops at the end of its
+ * row, so a next row that starts in the same color begins a new run.
+ */
+export function runEndPointer(sel: Area, seq: WorldPoint[], cells: Cells, bg: string, pointer: number): number {
+  if (pointer >= seq.length) return seq.length;
+  const width = sel.x1 - sel.x0 + 1;
+  const rowEnd = Math.min(seq.length, (Math.floor(pointer / width) + 1) * width);
+  const colorAt = (i: number) => cells[key(seq[i].x, seq[i].y)] || bg;
+  const color = colorAt(pointer);
+  let end = pointer + 1;
+  while (end < rowEnd && colorAt(end) === color) end++;
+  return end;
+}
+
 // ---- rotated stitching frame ----
 // Stitching Mode can turn the board clockwise. The rotated board is drawn as a
 // "frame": an area anchored at sel's top-left (width/height swapped at 90/270)

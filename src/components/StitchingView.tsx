@@ -23,6 +23,7 @@ export interface StitchingViewProps {
   flipped: boolean;
   onNext: () => void;
   onUndo: () => void;
+  onSkip: () => void;
   onCompleteRow: () => void;
   onUncompleteRow: () => void;
   onExit: () => void;
@@ -37,7 +38,7 @@ type StitchDragState =
   | { type: "pinch"; d: number; x: number; y: number; cell: number; panX: number; panY: number };
 
 export function StitchingView(props: StitchingViewProps) {
-  const { sel, seq, pointer, cells, bg, rotation, flipped, onNext, onUndo, onCompleteRow, onUncompleteRow, onExit, onReorder } = props;
+  const { sel, seq, pointer, cells, bg, rotation, flipped, onNext, onUndo, onSkip, onCompleteRow, onUncompleteRow, onExit, onReorder } = props;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<View>({ panX: 0, panY: 0, cell: 34 });
@@ -234,6 +235,9 @@ export function StitchingView(props: StitchingViewProps) {
     ? {}
     : { "--next-bg": currentColor, "--next-fg": E.contrastInk(currentColor) };
 
+  // stitches left in the current color run, counting the current one
+  const runLeft = done ? 0 : E.runEndPointer(sel, seq, cells, bg, pointer) - pointer;
+
   const holdNext = useHoldRepeat(onNext, done);
   const holdUndo = useHoldRepeat(onUndo, pointer === 0);
 
@@ -278,15 +282,17 @@ export function StitchingView(props: StitchingViewProps) {
         <button className={styles.btnUndoStitch} {...holdUndo} disabled={pointer === 0}>
           <Icons.Undo size={20} /> Undo
         </button>
+        <button className={`${styles.btnNext} ${styles.btnSkip}${done ? ` ${styles.done}` : ""}`} style={nextStyle} onClick={onSkip} disabled={done}
+          title="Skip to the end of this color" aria-label={`Skip ${runLeft} ${runLeft === 1 ? "stitch" : "stitches"} in this color`}>
+          <Icons.SkipForward size={18} />
+          {!done && <span className={styles.skipCount}>{runLeft}</span>}
+        </button>
         <button className={`${styles.btnNext}${done ? ` ${styles.done}` : ""}`} style={nextStyle}
           {...holdNext} disabled={done}>
           {done ? (
             <><Icons.Check size={22} /> All stitched</>
           ) : (
-            <>
-              Next
-              {currentColor && <span className={styles.yarnDot} style={{ background: currentColor }} />}
-            </>
+            "Next"
           )}
         </button>
       </div>

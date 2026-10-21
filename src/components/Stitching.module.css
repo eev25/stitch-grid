@@ -89,6 +89,7 @@
   color: var(--ink-soft);
   font-size: 15px; font-weight: 700;
   transition: background .14s, color .14s, transform .06s;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
 .btnUndoStitch:hover { background: var(--paper-2); color: var(--ink); }
 .btnUndoStitch:active { transform: translateY(1px); }
@@ -105,6 +106,7 @@
   box-shadow: var(--shadow-md);
   transition: filter .14s, transform .06s, background .2s, color .2s;
   position: relative;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
 .btnNext:hover { filter: brightness(1.05); }
 .btnNext:active { transform: translateY(1px); }

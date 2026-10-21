@@ -196,6 +196,37 @@ test.describe("Crochet Pattern Designer", () => {
     expect(await stitchOf()).toMatchObject({ rotation: 90, flipped: true });
   });
 
+  test("Holding Next / Undo repeats the step, and stops at the ends", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Begin Stitching" }).click();
+    const pointerOf = async () => (await readStore(page))?.stitch?.pointer ?? -1;
+    const next = page.getByRole("button", { name: "Next" });
+    const undo = page.getByRole("button", { name: "Undo" });
+
+    // A quick tap is still exactly one stitch.
+    await next.click();
+    await expect.poll(pointerOf, { timeout: 2000 }).toBe(1);
+
+    // Holding runs well past the tap, then stops when released.
+    const box = (await next.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(1500);
+    await page.mouse.up();
+    await expect.poll(pointerOf, { timeout: 2000 }).toBeGreaterThan(5);
+    const held = await pointerOf();
+    await page.waitForTimeout(500);
+    expect(await pointerOf()).toBe(held);
+
+    // Holding Undo walks back to the start and stops there.
+    const ubox = (await undo.boundingBox())!;
+    await page.mouse.move(ubox.x + ubox.width / 2, ubox.y + ubox.height / 2);
+    await page.mouse.down();
+    await expect(undo).toBeDisabled({ timeout: 15000 });
+    await page.mouse.up();
+    await expect.poll(pointerOf, { timeout: 2000 }).toBe(0);
+  });
+
   test("Mark row complete / uncomplete jump the stitch pointer by whole rows", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Begin Stitching" }).click();

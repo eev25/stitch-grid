@@ -7,6 +7,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties } f
 import * as E from "../engine/engine";
 import * as Icons from "../icons/icons";
 import { isTouchEvent, localPt, pinchDist, type CanvasPointerEvent } from "../hooks/canvasPointer";
+import { useHoldRepeat } from "../hooks/useHoldRepeat";
 import type { Area, Cells, Reorder, Rotation, View, WorldPoint } from "../types";
 import controls from "../styles/controls.module.css";
 import styles from "./Stitching.module.css";
@@ -233,6 +234,9 @@ export function StitchingView(props: StitchingViewProps) {
     ? {}
     : { "--next-bg": currentColor, "--next-fg": E.contrastInk(currentColor) };
 
+  const holdNext = useHoldRepeat(onNext, done);
+  const holdUndo = useHoldRepeat(onUndo, pointer === 0);
+
   return (
     <div className={styles.stitchApp}>
       <header className={styles.stitchTopbar}>
@@ -271,11 +275,11 @@ export function StitchingView(props: StitchingViewProps) {
       </div>
 
       <div className={styles.stitchActionbar}>
-        <button className={styles.btnUndoStitch} onClick={onUndo} disabled={pointer === 0}>
+        <button className={styles.btnUndoStitch} {...holdUndo} disabled={pointer === 0}>
           <Icons.Undo size={20} /> Undo
         </button>
         <button className={`${styles.btnNext}${done ? ` ${styles.done}` : ""}`} style={nextStyle}
-          onClick={done ? undefined : onNext} disabled={done}>
+          {...holdNext} disabled={done}>
           {done ? (
             <><Icons.Check size={22} /> All stitched</>
           ) : (

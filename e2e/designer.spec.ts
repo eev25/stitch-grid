@@ -86,7 +86,7 @@ test.describe("Crochet Pattern Designer", () => {
     // Open and confirm the destructive "new pattern" dialog.
     await page.locator('button[title="New pattern"]').click();
     await expect(page.getByText("Start a new pattern?")).toBeVisible();
-    await page.getByRole("button", { name: "Erase & start new" }).click();
+    await page.getByRole("button", { name: "Start New" }).click();
 
     // Empty canvas -> hint shown, Begin Stitching disabled (no working area yet).
     await expect(page.getByText("Pick a color, then paint your first stitch")).toBeVisible();
@@ -108,7 +108,7 @@ test.describe("Crochet Pattern Designer", () => {
 
     // A single-cell working area means a single-stitch sequence.
     await page.getByRole("button", { name: "Begin Stitching" }).click();
-    await expect(page.getByRole("button", { name: "Exit Stitching" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit Pattern" })).toBeVisible();
 
     const undoBtn = page.getByRole("button", { name: "Undo" });
     const nextBtn = page.getByRole("button", { name: "Next" });
@@ -131,7 +131,7 @@ test.describe("Crochet Pattern Designer", () => {
   test("Recenter in Stitching Mode restores the view after panning away", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Begin Stitching" }).click();
-    await expect(page.getByRole("button", { name: "Exit Stitching" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit Pattern" })).toBeVisible();
 
     const canvas = page.locator("canvas");
     const box = await canvas.boundingBox();

@@ -57,8 +57,8 @@ test("upload an image, pixelate it, move it, and remove it", async ({ page }) =>
   await expect(checks.nth(0)).toBeDisabled();
   await checks.nth(1).check();
 
-  await dialog.getByLabel("Clear existing work").check();
-  await expect(dialog.getByText("This can't be undone.")).toBeVisible();
+  await dialog.getByLabel("Start from new").check();
+  await expect(dialog.getByRole("alert")).toBeVisible();
   await dialog.getByRole("button", { name: "Add image" }).click();
   await expect(dialog).toHaveCount(0);
 
@@ -127,7 +127,7 @@ test("Pixelate paints edited swatches over their original regions and clears del
   const dialog = page.getByRole("dialog", { name: "Upload image" });
   await dialog.getByRole("button", { name: "Fewer colors" }).click();
   await dialog.getByRole("button", { name: "Fewer colors" }).click();
-  await dialog.getByLabel("Clear existing work").check();
+  await dialog.getByLabel("Start from new").check();
   await dialog.getByRole("button", { name: "Add image" }).click();
   await expect.poll(async () => (await readStore(page))?.image?.swatches.length).toBe(2);
 

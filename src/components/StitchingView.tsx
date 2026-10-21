@@ -150,6 +150,15 @@ export function StitchingView(props: StitchingViewProps) {
 
   useEffect(() => { redraw(); }, [redraw]);
 
+  // The dimension labels use the web font, which may arrive after the first
+  // draw; repaint once it does instead of keeping the fallback glyphs.
+  useEffect(() => {
+    const fonts = document.fonts;
+    if (!fonts) return;
+    fonts.addEventListener("loadingdone", redraw);
+    return () => fonts.removeEventListener("loadingdone", redraw);
+  }, [redraw]);
+
   // Keep a ref to the latest redraw so the wheel handler (registered once) always calls fresh.
   const redrawRef = useRef(redraw);
   useEffect(() => { redrawRef.current = redraw; }, [redraw]);

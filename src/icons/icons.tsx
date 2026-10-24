@@ -165,6 +165,15 @@ export function SkipForward(p: IconProps) {
   );
 }
 
+export function FastForward(p: IconProps) {
+  return (
+    <S {...p}>
+      <path d="M3 6l8.5 6L3 18Z" />
+      <path d="M12.5 6l8.5 6-8.5 6Z" />
+    </S>
+  );
+}
+
 export function Check(p: IconProps) {
   return (<S {...p} sw={2.4}><path d="M5 12.5 10 17.5 19 6.5" /></S>);
 }

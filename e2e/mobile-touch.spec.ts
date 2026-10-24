@@ -66,7 +66,7 @@ test("a tap near the bottom of the canvas paints the cell under the finger", asy
     .toBeLessThanOrEqual(2);
 });
 
-test("Stitching Mode's Undo / Skip / Next bar fits the phone width", async ({ page }) => {
+test("Stitching Mode's Undo / Next / Skip bar fits the phone width", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Begin Stitching" }).click();
   const undo = page.getByRole("button", { name: "Undo" });
@@ -76,7 +76,7 @@ test("Stitching Mode's Undo / Skip / Next bar fits the phone width", async ({ pa
 
   const vw = page.viewportSize()!.width;
   let prevRight = 0;
-  for (const btn of [undo, skip, next]) {
+  for (const btn of [undo, next, skip]) {
     const box = (await btn.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(prevRight);
     expect(box.x + box.width).toBeLessThanOrEqual(vw);

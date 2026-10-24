@@ -299,17 +299,16 @@ export function StitchingView(props: StitchingViewProps) {
         <button className={styles.btnUndoStitch} {...holdUndo} disabled={pointer === 0}>
           <Icons.Undo size={20} /> Undo
         </button>
-        <button className={`${styles.btnNext} ${styles.btnSkip}${done ? ` ${styles.done}` : ""}`} style={nextStyle} onClick={onSkip} disabled={done}
-          title="Skip to the end of this color" aria-label={`Skip ${runLeft} ${runLeft === 1 ? "stitch" : "stitches"} in this color`}>
-          <Icons.SkipForward size={18} />
-          {!done && <span className={styles.skipCount}>{runLeft}</span>}
+        <button className={`${styles.btnNext} ${styles.btnCompact}${done ? ` ${styles.done}` : ""}`} style={nextStyle}
+          {...holdNext} disabled={done} title="Next stitch" aria-label="Next">
+          <Icons.SkipForward size={20} />
         </button>
-        <button className={`${styles.btnNext}${done ? ` ${styles.done}` : ""}`} style={nextStyle}
-          {...holdNext} disabled={done}>
+        <button className={`${styles.btnNext}${done ? ` ${styles.done}` : ""}`} style={nextStyle} onClick={onSkip} disabled={done}
+          {...(!done && { title: "Skip to the end of this color", "aria-label": `Skip ${runLeft} ${runLeft === 1 ? "stitch" : "stitches"} in this color` })}>
           {done ? (
             <><Icons.Check size={22} /> All stitched</>
           ) : (
-            "Next"
+            <><Icons.FastForward size={20} /> <span className={styles.skipCount}>{runLeft}</span></>
           )}
         </button>
       </div>

@@ -112,13 +112,14 @@
 }
 .btnNext.done:hover { filter: none; }
 
-/* Skip is styled as Next (btnNext supplies colors, shadow, done state); only its size differs. */
-.btnSkip {
+/* Compact variant for Next (btnNext supplies colors, shadow, done state); Skip takes the prominent slot. */
+.btnCompact {
   flex: 0 0 auto;
   min-width: 76px; padding: 0 16px;
   gap: 6px;
-  font-size: 17px; font-variant-numeric: tabular-nums;
+  font-size: 17px;
 }
+.skipCount { font-variant-numeric: tabular-nums; }
 
 .progressLabel {
   font-size: 13px; font-weight: 700; color: var(--ink-soft);

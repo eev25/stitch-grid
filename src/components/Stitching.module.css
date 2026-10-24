@@ -24,13 +24,6 @@
 }
 .topbarSpacer { flex: 1 1 auto; }
 
-/* Flip row direction: shown pressed while row 1 runs right to left */
-.flipBtn[aria-pressed="true"] {
-  background: var(--accent-tint);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
 /* ---------- Canvas ---------- */
 .stitchCanvasWrap {
   flex: 1 1 auto;

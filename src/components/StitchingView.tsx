@@ -262,7 +262,7 @@ export function StitchingView(props: StitchingViewProps) {
             <Icons.Check size={16} /> Pattern complete
           </span>
         )}
-        <button className={`${controls.iconbtn} ${controls.bordered} ${styles.flipBtn}`}
+        <button className={`${controls.iconbtn} ${controls.bordered}`}
           onClick={() => onReorder("flip")} aria-pressed={flipped} aria-label="Flip row direction"
           title={flipped ? "First row: right to left" : "First row: left to right"}>
           <Icons.Flip size={20} />

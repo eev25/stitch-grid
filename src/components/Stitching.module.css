@@ -120,6 +120,12 @@
   font-size: 17px; font-variant-numeric: tabular-nums;
 }
 
+.progressLabel {
+  font-size: 13px; font-weight: 700; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .stitchCompleteTag {
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 13px; font-weight: 700; color: var(--accent);

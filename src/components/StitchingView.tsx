@@ -247,6 +247,9 @@ export function StitchingView(props: StitchingViewProps) {
   // stitches left in the current color run, counting the current one
   const runLeft = done ? 0 : E.runEndPointer(sel, seq, cells, bg, pointer) - pointer;
 
+  // floor so the label never reads 100% while stitches remain
+  const percent = done ? 100 : Math.floor((pointer / seq.length) * 100);
+
   const holdNext = useHoldRepeat(onNext, done);
   const holdUndo = useHoldRepeat(onUndo, pointer === 0);
 
@@ -257,6 +260,11 @@ export function StitchingView(props: StitchingViewProps) {
           <Icons.Exit size={18} /> Edit Pattern
         </button>
         <div className={styles.topbarSpacer} />
+        {!done && (
+          <span className={styles.progressLabel} title={`${pointer} of ${seq.length} stitches`}>
+            {percent}%
+          </span>
+        )}
         {done && (
           <span className={`${styles.stitchCompleteTag} ${controls.hideMobile}`}>
             <Icons.Check size={16} /> Pattern complete
